@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محول الروابط إلى رموز QR</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Readex+Pro:300,400,700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Readex Pro', sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin: 10px 0;
+        }
+
+        #url-input {
+            resize: vertical;
+        }
+
+        .btn {
+            margin: 5px;
+        }
+
+        #qr-codes {
+            margin-top: 20px;
+        }
+
+        #copyMessage {
+            display: none;
+        }
+
+        .home-button {
+            margin-top: 20px;
+            display: none;
+        }
+
+        svg {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="display-4">محول الروابط إلى رموز QR</h1>
+        <p>برمجة يوسف حُميد</p>
+        <div class="form-group">
+            <label for="url-input">ادخل الروابط هنا:</label>
+            <textarea id="url-input" class="form-control" rows="4" dir="ltr"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="generateQR()">إنشاء رموز QR</button>
+        <button class="btn btn-secondary" id="download-button" onclick="downloadAll()" disabled>تنزيل الكل</button>
+        <div id="qr-codes"></div>
+        <p id="copyMessage" class="alert alert-success">تم النسخ إلى الحافظة</p>
+        <button class="btn btn-primary home-button" onclick="scrollToTop()">الى الأعلى</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-toBlob.js@0.4.0/canvas-toBlob.min.js"></script>
+
+    <script>
+        function generateQR() {
+            var qrData = document.getElementById("url-input").value.split('\n').map(function(item) {
+                return item.trim();
+            }).filter(function(item) {
+                return item !== '';
+            });
+
+            var qrCodesHTML = '';
+            var counter = 1;
+            for (var i = 0; i < qrData.length; i++) {
+                var name = `QRCode_${counter}`;
+                var qr = qrcode(0, "L");
+                qr.addData(qrData[i]);
+                qr.make();
+                var svg = qr.createSvgTag({ scalable: true, size: 100 });
+                qrCodesHTML += `<div><div style="font-weight: bold;">${name}</div>${svg}${getQRButtonsHTML(counter - 1)}</div>`;
+                counter++;
+            }
+
+            document.getElementById("qr-codes").innerHTML = qrCodesHTML;
+            var homeButton = document.querySelector(".home-button");
+            homeButton.style.display = "block";
+            var downloadButton = document.getElementById("download-button");
+            downloadButton.removeAttribute("disabled");
+            scrollToTop();
+        }
+
+        function scrollToTop() {
+            window.scrollTo(0, 0);
+        }
+
+        function getQRButtonsHTML(index) {
+            return `
+                <div>
+                    <div> بصيغة Vector SVG 
+                        <div> 
+                    <button onclick="saveSVGToFile(${index})">حفظ كملف SVG</button>
+                    <button onclick="copySVGToClipboard(${index})">نسخ إلى الحافظة SVG</button>
+                <div> بصيغة صورة PNG
+                <div>
+                    <button onclick="savePNGToFile(${index})">حفظ كملف PNG</button>
+                    <button onclick="copyPNGToClipboard(${index})">نسخ إلى الحافظة PNG</button>
+                </div>
+            `;
+        }
+
+        function saveSVGToFile(index) {
+            var qrCodes = document.getElementById("qr-codes").getElementsByTagName("div");
+            if (index < 0 || index >= qrCodes.length) {
+                return;
+            }
+            var qrCodeDiv = qrCodes[index];
+            var svg = qrCodeDiv.querySelector("svg");
+            if (!svg) {
+                return;
+            }
+            var svgCode = svg.outerHTML;
+            var name = qrCodeDiv.querySelector("div").textContent.trim();
+            var blob = new Blob([svgCode], { type: "image/svg+xml" });
+            var link = document.createElement("a");
+            link.download = name + ".svg";
+            link.href = URL.createObjectURL(blob);
+            link.click();
+        }
+
+        function copySVGToClipboard(index) {
+            var qrCodes = document.getElementById("qr-codes").getElementsByTagName("div");
+            if (index < 0 || index >= qrCodes.length) {
+                return;
+            }
+            var qrCodeDiv = qrCodes[index];
+            var svg = qrCodeDiv.querySelector("svg");
+            if (!svg) {
+                return;
+            }
+            var svgCode = svg.outerHTML;
+            var textarea = document.createElement("textarea");
+            textarea.value = svgCode;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+            document.getElementById("copyMessage").style.display = "block";
+        }
+
+        function savePNGToFile(index) {
+            var qrCodes = document.getElementById("qr-codes").getElementsByTagName("div");
+            if (index < 0 || index >= qrCodes.length) {
+                return;
+            }
+            var qrCodeDiv = qrCodes[index];
+            var svg = qrCodeDiv.querySelector("svg");
+            if (!svg) {
+                return;
+            }
+
+            var canvas = document.createElement("canvas");
+            var svgSize = svg.getBoundingClientRect();
+            canvas.width = svgSize.width;
+            canvas.height = svgSize.height;
+            var ctx = canvas.getContext("2d");
+
+            var img = new Image();
+            var svgData = new XMLSerializer().serializeToString(svg);
+            var svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+            var url = URL.createObjectURL(svgBlob);
+
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0);
+                URL.revokeObjectURL(url);
+
+                canvas.toBlob(function(blob) {
+                    var name = qrCodeDiv.querySelector("div").textContent.trim();
+                    var link = document.createElement("a");
+                    link.download = name + ".png";
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                });
+            };
+
+            img.src = url;
+        }
+
+        function copyPNGToClipboard(index) {
+            var qrCodes = document.getElementById("qr-codes").getElementsByTagName("div");
+            if (index < 0 || index >= qrCodes.length) {
+                return;
+            }
+            var qrCodeDiv = qrCodes[index];
+            var svg = qrCodeDiv.querySelector("svg");
+            if (!svg) {
+                return;
+            }
+
+            var canvas = document.createElement("canvas");
+            var svgSize = svg.getBoundingClientRect();
+            canvas.width = svgSize.width;
+            canvas.height = svgSize.height;
+            var ctx = canvas.getContext("2d");
+
+            var img = new Image();
+            var svgData = new XMLSerializer().serializeToString(svg);
+            var svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+            var url = URL.createObjectURL(svgBlob);
+
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0);
+                URL.revokeObjectURL(url);
+
+                canvas.toBlob(function(blob) {
+                    var item = new ClipboardItem({ "image/png": blob });
+                    navigator.clipboard.write([item]);
+                    document.getElementById("copyMessage").style.display = "block";
+                });
+            };
+
+            img.src = url;
+        }
+
+        function downloadAll() {
+            var zip = new JSZip();
+            var svgFolder = zip.folder("SVG");
+            var pngFolder = zip.folder("PNG");
+            var qrCodes = document.getElementById("qr-codes").getElementsByTagName("div");
+
+            Array.from(qrCodes).forEach((qrCodeDiv, index) => {
+                var svg = qrCodeDiv.querySelector("svg");
+                if (!svg) {
+                    return;
+                }
+                var svgCode = svg.outerHTML;
+                var name = qrCodeDiv.querySelector("div").textContent.trim();
+
+            // Convert SVG to PNG and add to zip
+            var canvas = document.createElement("canvas");
+            var svgSize = svg.getBoundingClientRect();
+            canvas.width = svgSize.width;
+            canvas.height = svgSize.height;
+            var ctx = canvas.getContext("2d");
+
+            var img = new Image();
+            var svgData = new XMLSerializer().serializeToString(svg);
+            var svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+            var url = URL.createObjectURL(svgBlob);
+
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0);
+                URL.revokeObjectURL(url);
+
+                canvas.toBlob(function(blob) {
+                    pngFolder.file(name + ".png", blob);
+                    if (index === qrCodes.length - 1) {
+                        zip.generateAsync({ type: "blob" }).then(function(content) {
+                            var link = document.createElement("a");
+                            link.href = URL.createObjectURL(content);
+                            link.download = "QRCodes.zip";
+                            link.click();
+                        });
+                    }
+                });
+            };
+
+            img.src = url;
+        });
+    }
+</script>
+</body>
+</html>
+Version (2)
+July 2024
