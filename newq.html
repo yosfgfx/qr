@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>محول الروابط إلى رموز QR — إصدار محسّن</title>
+  <meta name="description" content="حوّل عدة روابط دفعة واحدة إلى رموز QR قابلة للتخصيص (ألوان، هامش، تصحيح أخطاء)، مع الحفظ كـ SVG/PNG وتنزيل الكل في ملف ZIP." />
+  <meta name="theme-color" content="#ffffff" id="themeColorMeta" />
+
+  <!-- Fonts & Bootstrap -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+
+  <!-- Icons (تأكد من توفر الملفات المسماة أدناه أو غيّر المسارات حسب ملفاتك) -->
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-icon-180x180.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="msapplication-TileColor" content="#ffffff" />
+  <meta name="msapplication-TileImage" content="ms-icon-144x144.png" />
+
+  <style>
+    :root {
+      --radius: 14px;
+      --shadow: 0 8px 24px rgba(0,0,0,.08);
+      --bg-grad-1: #edfffc;
+      --bg-grad-2: #f8fffb;
+      --card-bg: rgba(255,255,255,.88);
+      --text: #1d2a34;
+      --muted: #6b7b88;
+      --brand: #0066ff;
+      --ok: #28a745;
+      --warn: #f39c12;
+      --danger: #e74c3c;
+    }
+    body.dark {
+      --bg-grad-1: #244339;
+      --bg-grad-2: #161d20;
+      --card-bg: rgba(33, 41, 46, .88);
+      --text: #eef3f6;
+      --muted: #b9c3ca;
+      --brand: #66a3ff;
+      --ok: #63d488;
+      --warn: #ffcc66;
+      --danger: #ff7b6b;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Noto Kufi Arabic', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      background: linear-gradient(45deg, var(--bg-grad-1), var(--bg-grad-2));
+      background-size: 400% 400%;
+      animation: bgshift 20s ease infinite;
+      padding: 24px;
+    }
+    @keyframes bgshift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .app {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .card-like {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      transition: background .3s ease, color .3s ease;
+    }
+
+    header h1 {
+      font-weight: 800;
+      font-size: 2rem;
+      letter-spacing: .3px;
+      text-align: center;
+      margin-bottom: .5rem;
+      background: linear-gradient(45deg, #b5406b, #0022b2, #00b2e6, #dfb251);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradientText 30s ease-in-out infinite;
+    }
+    @keyframes gradientText {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    header p {
+      text-align: center;
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+    header .meta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .theme-toggle {
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 999px;
+      padding: 8px 14px;
+      background: transparent;
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .theme-toggle:focus { outline: 3px solid rgba(0,102,255,.25); }
+
+    .controls.card-like { margin-top: 16px; }
+    .controls .row + .row { margin-top: 12px; }
+    .control {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .control label {
+      font-weight: 700;
+      font-size: .9rem;
+    }
+    .control small {
+      color: var(--muted);
+    }
+    .inline {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .inline input[type="color"] {
+      padding: 0; border: none; background: transparent; width: 42px; height: 42px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1);
+    }
+    .inline input[type="checkbox"] { transform: scale(1.2); }
+
+    .input-wrap.card-like {
+      margin-top: 16px;
+    }
+    .input-wrap label {
+      font-weight: 800;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    /* Textarea with line numbers */
+    .ta-shell {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 8px;
+      align-items: start;
+      border: 1px solid rgba(0,0,0,.1);
+      border-radius: var(--radius);
+      background: linear-gradient(270deg, #f7f7f7, #ffffff);
+      padding: 10px;
+    }
+    body.dark .ta-shell { background: linear-gradient(270deg, #3a4a4f, #1c2428); border-color: #34495e; }
+    .line-nums {
+      user-select: none;
+      text-align: center;
+      direction: ltr;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      padding-top: 9px;
+      white-space: pre;
+      min-height: 120px;
+    }
+    textarea#urlInput {
+      width: 100%;
+      border: none;
+      outline: none;
+      resize: vertical;
+      min-height: 120px;
+      direction: ltr;
+      text-align: left;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      background: transparent;
+      color: inherit;
+    }
+    .ta-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .summary {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .qr-grid {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .qr-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid rgba(0,0,0,.08);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+    .qr-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 28px rgba(0,0,0,.14);
+    }
+    .qr-card h5 {
+      font-weight: 800;
+      font-size: 1rem;
+      background: rgba(0,0,0,.05);
+      padding: 8px 10px;
+      border-radius: 10px;
+      margin: 0 0 10px;
+    }
+    body.dark .qr-card h5 { background: rgba(255,255,255,.08); }
+
+    .qr-card .qr-svg {
+      width: 100%;
+      height: auto;
+      margin: 8px 0 10px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .act {
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+    .act h6 { font-weight: 700; font-size: .9rem; margin-bottom: 8px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .sticky-footer {
+      margin-top: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toast {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 1000;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: var(--ok);
+      color: #fff;
+      display: none;
+    }
+
+    /* Accessibility focus */
+    .btn:focus, button:focus, input:focus, select:focus, textarea:focus {
+      outline: 3px solid rgba(0,102,255,.25);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 768px) {
+      .toolbar { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="card-like">
+      <div class="toolbar">
+        <div>
+          <h1>محول الروابط إلى رموز QR</h1>
+          <div class="meta">
+            <span>برمجة: <a href="https://www.behance.net/yosfgfx" target="_blank" rel="noopener">يوسف حُميد</a></span>
+            <span>آخر تحديث: 2025</span>
+          </div>
+        </div>
+        <button id="themeToggle" class="theme-toggle" aria-pressed="false" aria-label="تبديل السمة">
+          <span id="themeIcon" aria-hidden="true">🌞</span>
+          <span id="themeText">الوضع الفاتح</span>
+        </button>
+      </div>
+
+      <p>اكتب كل رابط في سطر منفصل. في حال لم يبدأ الرابط ببروتوكول (http/https)، سنضيف http:// تلقائيًا لضمان صحة الرابط.</p>
+    </header>
+
+    <section class="input-wrap card-like">
+      <label for="urlInput">أدخل الروابط هنا:</label>
+      <div class="ta-shell" id="taShell">
+        <div class="line-nums" id="lineNums">1</div>
+        <textarea id="urlInput" placeholder="مثال:
+example.com
+https://openai.com
+behance.net/yosfgfx"></textarea>
+      </div>
+      <div class="ta-actions">
+        <button class="btn btn-sm btn-outline-secondary" id="pasteBtn" type="button">📋 لصق من الحافظة</button>
+        <button class="btn btn-sm btn-outline-danger" id="clearBtn" type="button">🧹 مسح</button>
+        <div class="ml-auto summary" id="summary">لا توجد روابط بعد.</div>
+      </div>
+    </section>
+
+    <section class="controls card-like" aria-label="خيارات توليد QR">
+      <div class="row">
+        <div class="col-md-4 control">
+          <label for="ecl">مستوى تصحيح الأخطاء</label>
+          <select id="ecl" class="form-control form-control-sm">
+            <option value="L">L (الأدنى)</option>
+            <option value="M" selected>M (قياسي)</option>
+            <option value="Q">Q</option>
+            <option value="H">H (الأعلى)</option>
+          </select>
+          <small>كلما زاد المستوى، زادت متانة الرمز ويكبر حجمه قليلًا.</small>
+        </div>
+        <div class="col-md-4 control">
+          <label for="margin">الهامش (Quiet Zone)</label>
+          <input id="margin" class="form-control form-control-sm" type="number" min="0" max="8" step="1" value="4" />
+          <small>الإطار الأبيض حول الرمز. يُنصح بـ 4.</small>
+        </div>
+        <div class="col-md-4 control">
+          <label for="pngSize">حجم صورة PNG (بالبكسل)</label>
+          <input id="pngSize" class="form-control form-control-sm" type="number" min="256" max="2048" step="64" value="1024" />
+          <small>ينطبق عند الحفظ أو النسخ كـ PNG.</small>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-5 control">
+          <label>الألوان</label>
+          <div class="inline">
+            <span>لون النقاط:</span>
+            <input type="color" id="fgColor" value="#000000" title="لون النقاط" />
+            <span>الخلفية:</span>
+            <input type="color" id="bgColor" value="#ffffff" title="لون الخلفية" />
+            <label class="inline" style="gap:6px;margin:0;">
+              <input type="checkbox" id="transparentBG" checked />
+              <span>خلفية شفافة</span>
+            </label>
+          </div>
+        </div>
+        <div class="col-md-4 control">
+          <label class="inline" style="gap:6px;">
+            <input type="checkbox" id="ignoreDuplicates" />
+            <span>تجاهُل الروابط المكررة</span>
+          </label>
+          <small>يُحتسب الرابط نفسه مرةً واحدة فقط.</small>
+        </div>
+        <div class="col-md-3 control">
+          <label>&nbsp;</label>
+          <button class="btn btn-primary btn-block" id="forceGenerate" type="button">إنشاء الآن</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="qr-grid" id="qrGrid" aria-live="polite"></section>
+
+    <div class="sticky-footer">
+      <button id="downloadAllBtn" class="btn btn-success" type="button" disabled>⬇️ تنزيل الكل كـ ZIP</button>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite">تم النسخ إلى الحافظة</div>
+  </div>
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+  <script>
+    // State
+    const els = {
+      themeToggle: document.getElementById('themeToggle'),
+      themeIcon: document.getElementById('themeIcon'),
+      themeText: document.getElementById('themeText'),
+      themeMeta: document.getElementById('themeColorMeta'),
+      urlInput: document.getElementById('urlInput'),
+      lineNums: document.getElementById('lineNums'),
+      pasteBtn: document.getElementById('pasteBtn'),
+      clearBtn: document.getElementById('clearBtn'),
+      ecl: document.getElementById('ecl'),
+      margin: document.getElementById('margin'),
+      pngSize: document.getElementById('pngSize'),
+      fgColor: document.getElementById('fgColor'),
+      bgColor: document.getElementById('bgColor'),
+      transparentBG: document.getElementById('transparentBG'),
+      ignoreDuplicates: document.getElementById('ignoreDuplicates'),
+      forceGenerate: document.getElementById('forceGenerate'),
+      qrGrid: document.getElementById('qrGrid'),
+      summary: document.getElementById('summary'),
+      downloadAllBtn: document.getElementById('downloadAllBtn'),
+      toast: document.getElementById('toast')
+    };
+
+    const state = {
+      theme: load('theme') ?? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+      ecl: load('ecl') ?? 'M',
+      margin: Number(load('margin') ?? 4),
+      pngSize: Number(load('pngSize') ?? 1024),
+      fg: load('fg') ?? '#000000',
+      bg: load('bg') ?? '#ffffff',
+      transparentBG: load('transparentBG') === 'false' ? false : true,
+      ignoreDuplicates: load('ignoreDuplicates') === 'true',
+      input: load('input') ?? ''
+    };
+
+    // Apply initial UI state
+    applyTheme(state.theme);
+    els.ecl.value = state.ecl;
+    els.margin.value = state.margin;
+    els.pngSize.value = state.pngSize;
+    els.fgColor.value = state.fg;
+    els.bgColor.value = state.bg;
+    els.transparentBG.checked = state.transparentBG;
+    els.ignoreDuplicates.checked = state.ignoreDuplicates;
+    els.urlInput.value = state.input;
+    updateLineNumbers();
+    debounceGenerate();
+
+    // Event listeners
+    els.themeToggle.addEventListener('click', () => {
+      state.theme = (state.theme === 'dark') ? 'light' : 'dark';
+      save('theme', state.theme);
+      applyTheme(state.theme);
+    });
+
+    els.urlInput.addEventListener('input', () => {
+      state.input = els.urlInput.value;
+      save('input', state.input);
+      updateLineNumbers();
+      debounceGenerate();
+    });
+    els.urlInput.addEventListener('scroll', syncScroll);
+    function syncScroll() {
+      els.lineNums.scrollTop = els.urlInput.scrollTop;
+    }
+
+    els.pasteBtn.addEventListener('click', async () => {
+      if (!navigator.clipboard || !navigator.clipboard.readText) {
+        notify('نسخ/لصق غير مدعوم في هذا المتصفح.');
+        return;
+      }
+      try {
+        const txt = await navigator.clipboard.readText();
+        if (txt) {
+          const sep = state.input.endsWith('\n') || state.input === '' ? '' : '\n';
+          els.urlInput.value = els.urlInput.value + sep + txt.trim();
+          els.urlInput.dispatchEvent(new Event('input'));
+        }
+      } catch {
+        notify('تعذّر الوصول إلى الحافظة. يرجى السماح بالوصول.');
+      }
+    });
+
+    els.clearBtn.addEventListener('click', () => {
+      els.urlInput.value = '';
+      els.urlInput.dispatchEvent(new Event('input'));
+    });
+
+    [els.ecl, els.margin, els.pngSize, els.fgColor, els.bgColor, els.transparentBG, els.ignoreDuplicates].forEach(el => {
+      el.addEventListener('change', () => {
+        if (el === els.margin) state.margin = clampInt(els.margin.value, 0, 8);
+        if (el === els.pngSize) state.pngSize = clampInt(els.pngSize.value, 64, 4096);
+        if (el === els.ecl) state.ecl = els.ecl.value;
+        if (el === els.fgColor) state.fg = els.fgColor.value;
+        if (el === els.bgColor) state.bg = els.bgColor.value;
+        if (el === els.transparentBG) state.transparentBG = els.transparentBG.checked;
+        if (el === els.ignoreDuplicates) state.ignoreDuplicates = els.ignoreDuplicates.checked;
+
+        save('ecl', state.ecl);
+        save('margin', state.margin);
+        save('pngSize', state.pngSize);
+        save('fg', state.fg);
+        save('bg', state.bg);
+        save('transparentBG', state.transparentBG);
+        save('ignoreDuplicates', state.ignoreDuplicates);
+
+        debounceGenerate();
+      });
+    });
+
+    els.forceGenerate.addEventListener('click', () => generate());
+    els.downloadAllBtn.addEventListener('click', () => downloadAll());
+
+    // Helpers
+    function applyTheme(theme) {
+      document.body.classList.toggle('dark', theme === 'dark');
+      els.themeToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+      els.themeIcon.textContent = theme === 'dark' ? '🌙' : '🌞';
+      els.themeText.textContent = theme === 'dark' ? 'الوضع الداكن' : 'الوضع الفاتح';
+      els.themeMeta.setAttribute('content', theme === 'dark' ? '#161d20' : '#ffffff');
+    }
+    function save(k, v) { try { localStorage.setItem('qr-' + k, String(v)); } catch {} }
+    function load(k) { try { return localStorage.getItem('qr-' + k); } catch { return null; } }
+    function clampInt(val, min, max) {
+      const n = parseInt(val, 10);
+      return Math.min(max, Math.max(min, isNaN(n) ? min : n));
+    }
+    function debounce(fn, ms) {
+      let t;
+      return function() {
+        clearTimeout(t);
+        t = setTimeout(fn, ms);
+      };
+    }
+    const debounceGenerate = debounce(generate, 300);
+
+    function updateLineNumbers() {
+      const lines = els.urlInput.value.split(/\r\n|\r|\n/).length || 1;
+      let buf = '';
+      for (let i = 1; i <= lines; i++) buf += i + '\n';
+      els.lineNums.textContent = buf.trimEnd() || '1';
+      syncScroll();
+    }
+
+    function isLikelyUrl(str) {
+      // Accept schemes like http(s), ftp, mailto, tel, wifi, etc.
+      if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(str)) return true;
+      try {
+        new URL(str);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    function isHostnameLike(str) {
+      // Rough check for domain-like strings (includes Unicode)
+      return /[.\u0600-\u06FF]/.test(str) || /^[a-z0-9-]+$/i.test(str);
+    }
+    function getValidUrl(str) {
+      const s = str.trim();
+      if (s === '') return null;
+      if (isLikelyUrl(s)) return s;
+      // If looks like a hostname without scheme, assume http://
+      if (isHostnameLike(s)) return 'http://' + s;
+      // Fallback: still return the string (QRs can hold general text)
+      return s;
+    }
+    function domainFromUrl(u) {
+      try {
+        const url = new URL(u);
+        return url.hostname.replace(/^www\./i, '');
+      } catch {
+        // For non-URL schemes (mailto, tel, text), build a short label
+        return u.split(':')[0] || 'qr';
+      }
+    }
+    function sanitizeFileName(name) {
+      // Keep Arabic, Latin, digits, dash, underscore, space
+      const safe = name.replace(/[^ \u0600-\u06FF\w\-\.]+/g, '-').replace(/\s+/g, ' ').trim();
+      return safe || 'qr';
+    }
+    function colorizeSvg(svg, fg, bg, transparent) {
+      // Replace black fills with fg
+      svg = svg.replace(/fill="(?:black|#000000|#000|rgb\(0,\s*0,\s*0\))"/gi, `fill="${fg}"`);
+      // Background rect (only if not transparent)
+      if (!transparent) {
+        svg = svg.replace(/<svg([^>]*)>/i, (m, attrs) => `<svg${attrs}><rect width="100%" height="100%" fill="${bg}"></rect>`);
+      }
+      return svg;
+    }
+
+    function makeQrSvgString(data, { ecl = 'M', margin = 4, fg = '#000000', bg = '#ffffff', transparentBG = true } = {}) {
+      const qr = qrcode(0, ecl);
+      qr.addData(data);
+      qr.make();
+      // Use scalable SVG with margin
+      let svg = qr.createSvgTag({ scalable: true, margin });
+      svg = colorizeSvg(svg, fg, bg, transparentBG);
+      return svg;
+    }
+
+    function svgElementToBlob(svgEl) {
+      const svgString = new XMLSerializer().serializeToString(svgEl);
+      return new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    }
+
+    function svgStringToPngBlob(svgString, size) {
+      return new Promise((resolve, reject) => {
+        const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(svgBlob);
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, size, size);
+            canvas.toBlob((blob) => {
+              URL.revokeObjectURL(url);
+              if (blob) resolve(blob); else reject(new Error('PNG conversion failed'));
+            }, 'image/png');
+          } catch (e) {
+            URL.revokeObjectURL(url);
+            reject(e);
+          }
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error('Failed to load SVG data'));
+        };
+        img.src = url;
+      });
+    }
+
+    function notify(msg, kind = 'ok') {
+      els.toast.textContent = msg;
+      els.toast.style.background = kind === 'ok' ? 'var(--ok)' : (kind === 'warn' ? 'var(--warn)' : 'var(--danger)');
+      els.toast.style.display = 'block';
+      setTimeout(() => (els.toast.style.display = 'none'), 1800);
+    }
+
+    // Rendering
+    async function generate() {
+      const rawLines = els.urlInput.value.split(/\r\n|\r|\n/).map(s => s.trim()).filter(Boolean);
+      const seen = new Set();
+      const urls = [];
+      for (const line of rawLines) {
+        const v = getValidUrl(line);
+        if (!v) continue;
+        if (state.ignoreDuplicates) {
+          const key = v;
+          if (seen.has(key)) continue;
+          seen.add(key);
+        }
+        urls.push(v);
+      }
+
+      // Summary
+      els.summary.textContent = urls.length
+        ? `تم تحضير ${urls.length} رابط/روابط.`
+        : 'لا توجد روابط بعد.';
+      els.downloadAllBtn.disabled = urls.length === 0;
+
+      // Build cards
+      els.qrGrid.innerHTML = '';
+      if (!urls.length) return;
+
+      const nameCounter = new Map();
+      const frag = document.createDocumentFragment();
+
+      for (const u of urls) {
+        const domain = domainFromUrl(u);
+        const baseName = sanitizeFileName(domain);
+        const idx = nameCounter.get(baseName) ?? 0;
+        nameCounter.set(baseName, idx + 1);
+        const displayName = idx === 0 ? baseName : `${baseName} ${idx}`;
+
+        const svgString = makeQrSvgString(u, {
+          ecl: state.ecl,
+          margin: state.margin,
+          fg: state.fg,
+          bg: state.bg,
+          transparentBG: state.transparentBG
+        });
+
+        const card = document.createElement('div');
+        card.className = 'qr-card';
+        card.dataset.url = u;
+        card.dataset.name = displayName;
+
+        const title = document.createElement('h5');
+        title.textContent = displayName;
+
+        // Insert SVG string safely
+        const holder = document.createElement('div');
+        holder.innerHTML = svgString;
+        const svgEl = holder.firstElementChild;
+        svgEl.classList.add('qr-svg');
+
+        // Actions
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
+        const colSvg = document.createElement('div');
+        colSvg.className = 'act';
+        colSvg.innerHTML = `<h6>SVG</h6>`;
+        const btnSaveSvg = document.createElement('button');
+        btnSaveSvg.className = 'btn btn-sm btn-outline-primary';
+        btnSaveSvg.type = 'button';
+        btnSaveSvg.textContent = 'حفظ';
+        btnSaveSvg.addEventListener('click', () => {
+          const blob = svgElementToBlob(svgEl);
+          saveAs(blob, displayName + '.svg');
+        });
+        const btnCopySvg = document.createElement('button');
+        btnCopySvg.className = 'btn btn-sm btn-outline-primary ml-1';
+        btnCopySvg.type = 'button';
+        btnCopySvg.textContent = 'نسخ';
+        btnCopySvg.addEventListener('click', async () => {
+          try {
+            const svgStr = new XMLSerializer().serializeToString(svgEl);
+            await navigator.clipboard.writeText(svgStr);
+            notify('تم نسخ SVG إلى الحافظة');
+          } catch {
+            notify('تعذّر نسخ SVG (صلاحيات الحافظة؟)', 'warn');
+          }
+        });
+        colSvg.appendChild(btnSaveSvg);
+        colSvg.appendChild(btnCopySvg);
+
+        const colPng = document.createElement('div');
+        colPng.className = 'act';
+        colPng.innerHTML = `<h6>PNG</h6>`;
+        const btnSavePng = document.createElement('button');
+        btnSavePng.className = 'btn btn-sm btn-outline-secondary';
+        btnSavePng.type = 'button';
+        btnSavePng.textContent = 'حفظ';
+        btnSavePng.addEventListener('click', async () => {
+          try {
+            const svgStr = new XMLSerializer().serializeToString(svgEl);
+            const blob = await svgStringToPngBlob(svgStr, state.pngSize);
+            saveAs(blob, displayName + '.png');
+          } catch {
+            notify('تعذّر إنشاء PNG', 'danger');
+          }
+        });
+        const btnCopyPng = document.createElement('button');
+        btnCopyPng.className = 'btn btn-sm btn-outline-secondary ml-1';
+        btnCopyPng.type = 'button';
+        btnCopyPng.textContent = 'نسخ';
+        btnCopyPng.addEventListener('click', async () => {
+          try {
+            if (!navigator.clipboard || !window.ClipboardItem) {
+              notify('نسخ PNG غير مدعوم في هذا المتصفح.', 'warn');
+              return;
+            }
+            const svgStr = new XMLSerializer().serializeToString(svgEl);
+            const blob = await svgStringToPngBlob(svgStr, state.pngSize);
+            await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+            notify('تم نسخ PNG إلى الحافظة');
+          } catch {
+            notify('تعذّر نسخ PNG', 'warn');
+          }
+        });
+        colPng.appendChild(btnSavePng);
+        colPng.appendChild(btnCopyPng);
+
+        actions.appendChild(colSvg);
+        actions.appendChild(colPng);
+
+        card.appendChild(title);
+        card.appendChild(svgEl);
+        card.appendChild(actions);
+
+        frag.appendChild(card);
+      }
+
+      els.qrGrid.appendChild(frag);
+    }
+
+    async function downloadAll() {
+      const cards = Array.from(document.querySelectorAll('.qr-card'));
+      if (!cards.length) return;
+
+      els.downloadAllBtn.disabled = true;
+      const zip = new JSZip();
+      const fSvg = zip.folder('SVG');
+      const fPng = zip.folder('PNG');
+
+      const tasks = cards.map(async (card) => {
+        const name = card.dataset.name;
+        const svg = card.querySelector('svg');
+        const svgStr = new XMLSerializer().serializeToString(svg);
+        fSvg.file(name + '.svg', svgStr);
+        const pngBlob = await svgStringToPngBlob(svgStr, state.pngSize);
+        fPng.file(name + '.png', pngBlob);
+      });
+
+      try {
+        await Promise.all(tasks);
+        const content = await zip.generateAsync({ type: 'blob' });
+        saveAs(content, 'QRCodes.zip');
+      } catch {
+        notify('تعذّر إنشاء الملف المضغوط', 'danger');
+      } finally {
+        els.downloadAllBtn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
