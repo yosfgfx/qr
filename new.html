@@ -3,19 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
-  <title>مُنشئ وقارئ رموز QRcode</title>
+  <title>مُنشئ رموز QR والباركود</title>
   <meta name="theme-color" content="#0b1929" />
-  <meta name="description" content="أداة مجانية لإنشاء وقراءة رموز QR بأنماط قابلة للتخصيص " />
+  <meta name="description" content="أداة مجانية لإنشاء وقراءة رموز QR وجميع أنواع الباركود التجارية" />
   <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%235de2e7' width='180' height='180' rx='40'/><rect fill='white' x='30' y='30' width='30' height='30'/><rect fill='white' x='75' y='30' width='30' height='30'/><rect fill='white' x='120' y='30' width='30' height='30'/><rect fill='white' x='30' y='75' width='30' height='30'/><rect fill='white' x='120' y='75' width='30' height='30'/><rect fill='white' x='30' y='120' width='30' height='30'/><rect fill='white' x='75' y='120' width='30' height='30'/><rect fill='white' x='120' y='120' width='30' height='30'/></svg>">
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" sizes="192x192"  href="android-icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="-32x32.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="-16x16.png">
-    <link rel="manifest" href="manifest.json">
-    <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="ms-icon-144x144.png">
-    <meta name="theme-color" content="#ffffff">
+  <link rel="icon" type="image/png" sizes="192x192" href="android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="-16x16.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="ms-icon-144x144.png">
 
   <style>
     :root{
@@ -84,7 +83,6 @@
       padding: clamp(12px, 3vw, 24px);
     }
 
-    /* Header */
     header{
       display:flex; align-items:center; justify-content:space-between; gap:16px;
       margin-bottom: 24px; flex-wrap:wrap;
@@ -95,9 +93,7 @@
       to{transform:translateY(0); opacity:1}
     }
 
-    .brand{
-      display:flex; align-items:center; gap:12px;
-    }
+    .brand{ display:flex; align-items:center; gap:12px; }
     .logo{
       width:48px; height:48px; border-radius:var(--radius-sm);
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
@@ -107,7 +103,8 @@
       position:relative; overflow:hidden;
     }
     .logo::before{
-      content:''; position:absolute; inset:-50%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+      content:''; position:absolute; inset:-50%;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
       animation: shine 3s ease-in-out infinite;
     }
     @keyframes shine{
@@ -119,20 +116,13 @@
     h1{
       margin:0; font-size: clamp(20px, 3vw, 28px); font-weight:800;
       background: linear-gradient(135deg, var(--accent), var(--accent-2), var(--accent-3));
-      -webkit-background-clip: text;
-      background-clip: text;
+      -webkit-background-clip: text; background-clip: text;
       -webkit-text-fill-color: transparent;
       letter-spacing: -0.02em;
     }
-    .tagline{
-      font-size: clamp(11px, 1.5vw, 13px); color:var(--muted); margin-top:2px;
-    }
+    .tagline{ font-size: clamp(11px, 1.5vw, 13px); color:var(--muted); margin-top:2px; }
+    .header-actions{ display:flex; gap:8px; align-items:center; }
 
-    .header-actions{
-      display:flex; gap:8px; align-items:center;
-    }
-
-    /* Buttons */
     .btn{
       display:inline-flex; align-items:center; justify-content:center; gap:8px;
       height:42px; padding:0 18px; border-radius:var(--radius-sm); border:none;
@@ -154,9 +144,7 @@
       color:white; border:none; font-weight:600;
       box-shadow: 0 4px 14px var(--accent-glow);
     }
-    .btn.primary:hover{
-      box-shadow: 0 6px 20px var(--accent-glow);
-    }
+    .btn.primary:hover{ box-shadow: 0 6px 20px var(--accent-glow); }
     .btn.good{
       background: linear-gradient(135deg, var(--good), #10b981);
       color:white; border:none;
@@ -165,18 +153,75 @@
       background: linear-gradient(135deg, var(--warn), #f59e0b);
       color:white; border:none;
     }
-    .btn.icon-only{
-      width:42px; padding:0;
+    .btn.icon-only{ width:42px; padding:0; }
+    .btn[disabled]{ opacity:0.5; cursor:not-allowed; pointer-events:none; }
+    .icon{ width:20px; height:20px; flex-shrink:0; }
+
+    /* Code Type Tabs */
+    .code-type-tabs{
+      display:flex; gap:4px; margin-bottom:20px;
+      background: var(--surface); border-radius:var(--radius-sm);
+      padding:4px; border: 1px solid var(--border);
     }
-    .btn[disabled]{
-      opacity:0.5; cursor:not-allowed; pointer-events:none;
+    .code-tab{
+      flex:1; display:flex; align-items:center; justify-content:center; gap:8px;
+      height:44px; border:none; border-radius:var(--radius-xs);
+      background:transparent; color:var(--muted); cursor:pointer;
+      font-size:14px; font-weight:600; font-family:inherit;
+      transition: var(--transition);
     }
-    
-    .icon{
-      width:20px; height:20px; flex-shrink:0;
+    .code-tab:hover{ color:var(--text); background: var(--glass); }
+    .code-tab.active{
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color:white; box-shadow: 0 4px 12px var(--accent-glow);
+    }
+    .code-tab .icon{ width:18px; height:18px; }
+
+    /* Barcode Format Selector */
+    .barcode-selector{
+      margin-bottom:16px; display:none;
+      animation: slideOpen 0.3s ease;
+    }
+    .barcode-selector.show{ display:block; }
+    .barcode-format-grid{
+      display:grid; gap:8px;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      margin-bottom:12px;
+    }
+    .barcode-format-btn{
+      padding:10px 8px; height:auto; flex-direction:column; gap:4px;
+      font-size:11px; background: var(--surface); text-align:center;
+    }
+    .barcode-format-btn .format-name{
+      font-size:13px; font-weight:700; color:var(--text);
+    }
+    .barcode-format-btn .format-desc{
+      font-size:10px; color:var(--muted); line-height:1.3;
+    }
+    .barcode-format-btn:hover{
+      background: var(--glass-hover); border-color: var(--accent);
+    }
+    .barcode-format-btn.active{
+      background: var(--accent); color:white; border-color:var(--accent);
+    }
+    .barcode-format-btn.active .format-name,
+    .barcode-format-btn.active .format-desc{ color:white; }
+
+    .barcode-category-title{
+      font-size:12px; font-weight:700; color:var(--accent);
+      text-transform:uppercase; letter-spacing:0.5px;
+      margin:12px 0 8px; padding-bottom:4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .barcode-category-title:first-child{ margin-top:0; }
+
+    .barcode-hint{
+      font-size:12px; color:var(--muted); padding:8px 12px;
+      background: var(--surface); border-radius:var(--radius-xs);
+      border-right: 3px solid var(--accent); margin-bottom:12px;
     }
 
-    /* Grid Layout */
+    /* Main Grid */
     .main-grid{
       display:grid; gap:20px;
       grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
@@ -186,11 +231,8 @@
       from{opacity:0; transform:translateY(10px)}
       to{opacity:1; transform:translateY(0)}
     }
-    @media (max-width: 968px){
-      .main-grid{grid-template-columns: 1fr}
-    }
+    @media (max-width: 968px){ .main-grid{grid-template-columns: 1fr} }
 
-    /* Panels */
     .panel{
       background: var(--glass);
       border: 1px solid var(--border);
@@ -200,9 +242,7 @@
       box-shadow: var(--shadow);
       transition: var(--transition);
     }
-    .panel:hover{
-      box-shadow: var(--shadow), 0 0 40px rgba(93,226,231,0.05);
-    }
+    .panel:hover{ box-shadow: var(--shadow), 0 0 40px rgba(93,226,231,0.05); }
 
     .section-header{
       display:flex; align-items:center; justify-content:space-between; gap:12px;
@@ -223,16 +263,10 @@
       padding:12px 8px; height:auto; flex-direction:column; gap:6px;
       font-size:12px; background: var(--surface);
     }
-    .builder-btn:hover{
-      background: var(--glass-hover);
-      border-color: var(--accent);
-    }
-    .builder-btn.active{
-      background: var(--accent); color:white; border-color:var(--accent);
-    }
+    .builder-btn:hover{ background: var(--glass-hover); border-color: var(--accent); }
+    .builder-btn.active{ background: var(--accent); color:white; border-color:var(--accent); }
     .builder-btn .icon{width:24px; height:24px}
 
-    /* Builder Form */
     .builder-form{
       background: var(--surface); border-radius:var(--radius-sm);
       padding:16px; margin-bottom:16px; display:none;
@@ -248,7 +282,6 @@
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
 
-    /* Inputs */
     .field{display:flex; flex-direction:column; gap:6px}
     .field label{
       font-size:12px; color:var(--muted); font-weight:500;
@@ -266,8 +299,7 @@
       box-shadow: 0 0 0 3px var(--accent-glow);
     }
     .color-input{padding:6px; cursor:pointer}
-    
-    /* Textarea with lines */
+
     .textarea-container{
       position:relative; border-radius:var(--radius-sm);
       background: var(--glass); border: 1px solid var(--border);
@@ -284,21 +316,66 @@
       font-family: 'Courier New', monospace;
     }
     .textarea{
-      width:100%; min-height:140px; max-height:400px; resize:vertical;
+      width:100%; min-height:120px; max-height:400px; resize:vertical;
       padding:12px 48px 12px 12px; background:transparent; color:var(--text);
       border:none; outline:none; font-size:14px; line-height:1.65;
       font-family:inherit; direction:ltr; text-align:left;
     }
     .textarea::placeholder{color:var(--muted); opacity:0.7}
 
+    /* Live Preview */
+    .live-preview{
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); margin:16px 0;
+      overflow:hidden; transition: var(--transition);
+    }
+    .live-preview:hover{ border-color: var(--accent); }
+    .live-preview-header{
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      padding:12px 16px; border-bottom: 1px solid var(--border);
+      background: var(--glass);
+    }
+    .live-preview-title{
+      font-size:13px; font-weight:600; color:var(--accent);
+      display:flex; align-items:center; gap:8px;
+    }
+    .live-preview-title .dot{
+      width:8px; height:8px; border-radius:50%;
+      background: var(--good); animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink{
+      0%,100%{opacity:1} 50%{opacity:0.3}
+    }
+    .live-preview-actions{
+      display:flex; gap:6px;
+    }
+    .live-preview-actions .btn{
+      height:32px; font-size:11px; padding:0 10px;
+    }
+    .preview-canvas{
+      display:flex; align-items:center; justify-content:center;
+      min-height:160px; padding:20px;
+      background: white; position:relative;
+    }
+    .preview-canvas svg{ max-width:100%; height:auto; }
+    .preview-canvas canvas{ max-width:100%; height:auto; }
+    .preview-placeholder{
+      color:#999; font-size:14px; text-align:center;
+      padding:40px 20px;
+    }
+    .preview-placeholder .icon{ width:48px; height:48px; margin:0 auto 12px; opacity:0.3; }
+    .preview-error{
+      color:var(--bad); font-size:13px; text-align:center;
+      padding:30px 20px; background: rgba(248,113,113,0.05);
+      border-radius:var(--radius-xs);
+    }
+
     /* Style Options Grid */
     .style-grid{
       display:grid; gap:12px; margin-top:16px;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     }
-    @media (max-width: 640px){
-      .style-grid{grid-template-columns: repeat(2, 1fr)}
-    }
+    @media (max-width: 640px){ .style-grid{grid-template-columns: repeat(2, 1fr)} }
 
     /* QR Cards Grid */
     .qr-grid{
@@ -322,8 +399,7 @@
     }
     .qr-card:hover{
       transform: translateY(-4px);
-      box-shadow: var(--shadow);
-      border-color: var(--accent);
+      box-shadow: var(--shadow); border-color: var(--accent);
     }
     .qr-card-header{
       display:flex; align-items:center; justify-content:space-between; gap:8px;
@@ -333,21 +409,22 @@
       font-size:14px; font-weight:600; color:var(--text);
       overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
+    .qr-card-badge{
+      font-size:10px; font-weight:700; padding:2px 8px;
+      border-radius:20px; background: var(--accent); color:white;
+      flex-shrink:0;
+    }
     .qr-preview{
       background: white; border-radius:var(--radius-sm); padding:12px;
       display:flex; align-items:center; justify-content:center;
-      min-height:200px; margin-bottom:12px; position:relative;
-      overflow:hidden;
+      min-height:180px; margin-bottom:12px; position:relative; overflow:hidden;
     }
-    .qr-preview canvas{
-      max-width:100%; height:auto; display:block;
-    }
+    .qr-preview canvas{ max-width:100%; height:auto; display:block; }
+    .qr-preview svg{ max-width:100%; height:auto; display:block; }
     .qr-actions{
       display:grid; gap:8px; grid-template-columns: repeat(2, 1fr);
     }
-    .qr-actions .btn{
-      height:36px; font-size:12px; padding:0 12px;
-    }
+    .qr-actions .btn{ height:36px; font-size:12px; padding:0 12px; }
 
     /* Decoder Zone */
     .drop-zone{
@@ -359,21 +436,11 @@
       background: var(--accent-glow); border-color: var(--accent);
       box-shadow: 0 0 30px var(--accent-glow);
     }
-    .drop-zone-icon{
-      width:64px; height:64px; margin:0 auto 16px;
-      color:var(--muted); opacity:0.5;
-    }
-    .drop-zone-text{
-      font-size:14px; color:var(--text-2); margin-bottom:16px;
-    }
-    .drop-zone-hint{
-      font-size:12px; color:var(--muted);
-    }
+    .drop-zone-icon{ width:64px; height:64px; margin:0 auto 16px; color:var(--muted); opacity:0.5; }
+    .drop-zone-text{ font-size:14px; color:var(--text-2); margin-bottom:16px; }
+    .drop-zone-hint{ font-size:12px; color:var(--muted); }
 
-    /* Decode Results */
-    .decode-results{
-      display:flex; flex-direction:column; gap:12px; margin-top:16px;
-    }
+    .decode-results{ display:flex; flex-direction:column; gap:12px; margin-top:16px; }
     .decode-item{
       background: var(--glass); border: 1px solid var(--border);
       border-radius: var(--radius-sm); padding:12px;
@@ -389,45 +456,22 @@
       background: white; overflow:hidden;
       display:flex; align-items:center; justify-content:center;
     }
-    .decode-thumb img{
-      width:100%; height:100%; object-fit:contain;
-    }
+    .decode-thumb img{ width:100%; height:100%; object-fit:contain; }
     .decode-content{flex:1}
     .decode-text{
       font-size:13px; word-break:break-word; color:var(--text-2);
       margin-bottom:8px; line-height:1.5;
     }
-    .decode-text strong{
-      color:var(--text); font-weight:600; display:block; margin-bottom:4px;
-    }
-    .decode-actions{
-      display:flex; gap:8px; flex-wrap:wrap;
-    }
-    .decode-actions .btn{
-      height:32px; font-size:12px; padding:0 12px;
-    }
+    .decode-text strong{ color:var(--text); font-weight:600; display:block; margin-bottom:4px; }
+    .decode-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+    .decode-actions .btn{ height:32px; font-size:12px; padding:0 12px; }
 
-    /* Camera View */
     video{
       width:100%; border-radius:var(--radius-sm); background:#000;
       margin-top:16px; display:none;
     }
     video.active{display:block}
-    .camera-overlay{
-      position:absolute; inset:0; pointer-events:none;
-      display:flex; align-items:center; justify-content:center;
-    }
-    .scan-region{
-      width:200px; height:200px; border:2px solid var(--accent);
-      border-radius:var(--radius-sm); position:relative;
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse{
-      0%,100%{opacity:1}
-      50%{opacity:0.5}
-    }
 
-    /* Toast Notifications */
     .toast-container{
       position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
       z-index:9999; display:flex; flex-direction:column; gap:8px;
@@ -451,7 +495,6 @@
     .toast.warning{background: rgba(245,158,11,0.9)}
     .toast-icon{width:20px; height:20px; flex-shrink:0}
 
-    /* Help Modal */
     .modal{
       position:fixed; inset:0; display:none; place-items:center;
       background: rgba(0,0,0,0.7); z-index:9998;
@@ -473,30 +516,21 @@
       display:flex; align-items:center; justify-content:space-between;
       margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--border);
     }
-    .modal-title{
-      font-size:20px; font-weight:700; color:var(--text);
-    }
-    .shortcuts-grid{
-      display:grid; gap:12px;
-    }
+    .modal-title{ font-size:20px; font-weight:700; color:var(--text); }
+    .shortcuts-grid{ display:grid; gap:12px; }
     .shortcut-item{
       display:flex; align-items:center; gap:12px;
       padding:12px; background: var(--surface); border-radius:var(--radius-sm);
       border: 1px solid var(--border);
     }
-    .shortcut-keys{
-      display:flex; gap:4px;
-    }
+    .shortcut-keys{ display:flex; gap:4px; }
     .kbd{
       background: var(--glass); padding:4px 8px; border-radius:6px;
       border: 1px solid var(--border); font-weight:600; font-size:12px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    .shortcut-desc{
-      flex:1; font-size:14px; color:var(--text-2);
-    }
+    .shortcut-desc{ flex:1; font-size:14px; color:var(--text-2); }
 
-    /* Mobile Optimizations */
     @media (max-width: 640px){
       .container{padding:12px}
       .panel{padding:16px}
@@ -507,38 +541,26 @@
       .builder-fields{grid-template-columns: 1fr}
       .header-actions .btn span{display:none}
       .btn{height:38px; padding:0 14px}
+      .barcode-format-grid{grid-template-columns: repeat(auto-fill, minmax(110px, 1fr))}
+      .live-preview-actions .btn span.hide-mobile{display:none}
     }
 
-    /* Loading States */
-    .loading{
-      position:relative; overflow:hidden;
-    }
-    .loading::after{
-      content:''; position:absolute; inset:0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-      animation: shimmer 1.5s infinite;
-    }
-    @keyframes shimmer{
-      0%{transform:translateX(-100%)}
-      100%{transform:translateX(100%)}
-    }
-
-    /* Accessibility */
     .sr-only{
       position:absolute; width:1px; height:1px; padding:0; margin:-1px;
       overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
     }
-    :focus-visible{
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
+    :focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
 
-    /* Print Styles */
     @media print{
       body{background:white; color:black}
       .panel{box-shadow:none; border:1px solid #ddd}
       .btn, .header-actions, .modal{display:none}
       .qr-preview{background:#fff; border:1px solid #ddd}
+    }
+
+    @keyframes fadeOut{
+      from{opacity:1; transform:translateY(0)}
+      to{opacity:0; transform:translateY(20px)}
     }
   </style>
 </head>
@@ -553,8 +575,8 @@
           </svg>
         </div>
         <div>
-          <h1>مُنشئ وقارئ رموز QR code</h1>
-          <div class="tagline">تطوير: يوسف حُميد | الإصدار 2.0  | أغسطس 2025</div>
+          <h1>مُنشئ رموز QR والباركود</h1>
+          <div class="tagline">تطوير: يوسف حُميد | الإصدار 3.0</div>
         </div>
       </div>
       <div class="header-actions">
@@ -595,21 +617,96 @@
           </button>
         </div>
 
-        <!-- Quick Builders -->
-        <div class="quick-builders">
-          <button class="builder-btn" data-type="text">
+        <!-- Code Type Tabs -->
+        <div class="code-type-tabs">
+          <button class="code-tab active" data-mode="qr">
+            <svg class="icon" viewBox="0 0 24 24" fill="none">
+              <path d="M3 3h7v7H3V3Zm11 0h7v7h-7V3ZM3 14h7v7H3v-7Z" fill="currentColor"/>
+              <path d="M14 14h2v2h-2v-2Zm4 0h2v2h-2v-2Zm-4 4h2v2h-2v-2Zm4 0h2v2h-2v-2Z" fill="currentColor"/>
+            </svg>
+            رمز QR
+          </button>
+          <button class="code-tab" data-mode="barcode">
+            <svg class="icon" viewBox="0 0 24 24" fill="none">
+              <path d="M2 4h2v16H2V4Zm4 0h1v16H6V4Zm3 0h2v16H9V4Zm4 0h1v16h-1V4Zm3 0h2v16h-2V4Zm4 0h2v16h-2V4Z" fill="currentColor"/>
+            </svg>
+            باركود
+          </button>
+        </div>
+
+        <!-- Barcode Format Selector -->
+        <div class="barcode-selector" id="barcodeSelector">
+          <div class="barcode-category-title">تجارية - المنتجات</div>
+          <div class="barcode-format-grid">
+            <button class="btn barcode-format-btn active" data-format="CODE128">
+              <div class="format-name">Code 128</div>
+              <div class="format-desc">الأكثر استخداماً</div>
+            </button>
+            <button class="btn barcode-format-btn" data-format="EAN13">
+              <div class="format-name">EAN-13</div>
+              <div class="format-desc">المنتجات الأوروبية</div>
+            </button>
+            <button class="btn barcode-format-btn" data-format="EAN8">
+              <div class="format-name">EAN-8</div>
+              <div class="format-desc">منتجات مختصر</div>
+            </button>
+            <button class="btn barcode-format-btn" data-format="UPC">
+              <div class="format-name">UPC-A</div>
+              <div class="format-desc">المنتجات الأمريكية</div>
+            </button>
+            <button class="btn barcode-format-btn" data-format="UPCE">
+              <div class="format-name">UPC-E</div>
+              <div class="format-desc">مختصر أمريكي</div>
+            </button>
+          </div>
+          <div class="barcode-category-title">صناعية - الشحن والنقل</div>
+          <div class="barcode-format-grid">
+            <button class="btn barcode-format-btn" data-format="CODE39">
+              <div class="format-name">Code 39</div>
+              <div class="format-desc">أحرف وأرقام</div>
+            </button>
+            <button class="btn barcode-format-btn" data-format="CODE93">
+              <div class="format-name">Code 93</div>
+              <div class="format-desc">نسخة محسّنة</div>
+            </button>
+            <button class="btn barcode-format-btn" data-format="ITF14">
+              <div class="format-name">ITF-14</div>
+              <div class="format-desc">الشحن والنقل</div>
+            </button>
+          </div>
+          <div class="barcode-category-title">متخصصة - بطاقات ومستودعات</div>
+          <div class="barcode-format-grid">
+            <button class="btn barcode-format-btn" data-format="codabar">
+              <div class="format-name">Codabar</div>
+              <div class="format-desc">المكتبات والبطاقات</div>
+            </button>
+            <button class="btn barcode-format-btn" data-format="MSI">
+              <div class="format-name">MSI</div>
+              <div class="format-desc">إدارة المخزون</div>
+            </button>
+            <button class="btn barcode-format-btn" data-format="pharmacode">
+              <div class="format-name">Pharmacode</div>
+              <div class="format-desc">صناعة الأدوية</div>
+            </button>
+          </div>
+          <div id="barcodeHint" class="barcode-hint">Code 128: يقبل جميع أحرف ASCII - الأكثر تنوعاً واستخداماً</div>
+        </div>
+
+        <!-- QR Quick Builders -->
+        <div class="quick-builders" id="qrBuilders">
+          <button class="builder-btn btn" data-type="text">
             <svg class="icon" viewBox="0 0 24 24" fill="none">
               <path d="M4 6h16M4 12h16M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
             نص/رابط
           </button>
-          <button class="builder-btn" data-type="wifi">
+          <button class="builder-btn btn" data-type="wifi">
             <svg class="icon" viewBox="0 0 24 24" fill="none">
               <path d="M5 12.55a11 11 0 0 1 14 0M8.53 16a6 6 0 0 1 6.95 0M12 19h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
             Wi-Fi
           </button>
-          <button class="builder-btn" data-type="vcard">
+          <button class="builder-btn btn" data-type="vcard">
             <svg class="icon" viewBox="0 0 24 24" fill="none">
               <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
               <circle cx="12" cy="10" r="2" stroke="currentColor" stroke-width="2"/>
@@ -617,20 +714,20 @@
             </svg>
             جهة اتصال
           </button>
-          <button class="builder-btn" data-type="email">
+          <button class="builder-btn btn" data-type="email">
             <svg class="icon" viewBox="0 0 24 24" fill="none">
               <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
               <path d="M3 7l9 6 9-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
             بريد
           </button>
-          <button class="builder-btn" data-type="sms">
+          <button class="builder-btn btn" data-type="sms">
             <svg class="icon" viewBox="0 0 24 24" fill="none">
               <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z" stroke="currentColor" stroke-width="2"/>
             </svg>
             رسالة
           </button>
-          <button class="builder-btn" data-type="geo">
+          <button class="builder-btn btn" data-type="geo">
             <svg class="icon" viewBox="0 0 24 24" fill="none">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/>
               <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
@@ -653,17 +750,58 @@
           </div>
         </div>
 
-        <!-- Multi-line Input -->
+        <!-- Input -->
         <div class="field">
           <label>البيانات (سطر لكل رمز)</label>
           <div class="textarea-container">
             <div class="line-numbers" id="lineNumbers">1</div>
-            <textarea 
-              id="multiInput" 
-              class="textarea" 
+            <textarea
+              id="multiInput"
+              class="textarea"
               placeholder="https://example.com&#10;نص حر&#10;بيانات أخرى..."
               spellcheck="false"
             ></textarea>
+          </div>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="live-preview" id="livePreview">
+          <div class="live-preview-header">
+            <div class="live-preview-title">
+              <span class="dot"></span>
+              معاينة مباشرة
+            </div>
+            <div class="live-preview-actions">
+              <button class="btn" id="copyPreviewPng" title="نسخ كصورة">
+                <svg class="icon" viewBox="0 0 24 24" fill="none">
+                  <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <span class="hide-mobile">نسخ PNG</span>
+              </button>
+              <button class="btn" id="copyPreviewSvg" title="نسخ SVG">
+                <svg class="icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M14 3v4a1 1 0 0 0 1 1h4M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7l-5-4Z" stroke="currentColor" stroke-width="2"/>
+                  <path d="M9 13h6M9 17h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span class="hide-mobile">SVG</span>
+              </button>
+              <button class="btn good" id="downloadPreview" title="تحميل">
+                <svg class="icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span class="hide-mobile">حفظ</span>
+              </button>
+            </div>
+          </div>
+          <div class="preview-canvas" id="previewCanvas">
+            <div class="preview-placeholder">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M3 3h7v7H3V3Zm11 0h7v7h-7V3ZM3 14h7v7H3v-7Z" fill="currentColor"/>
+                <path d="M14 14h2v2h-2v-2Zm4 0h2v2h-2v-2Zm-4 4h2v2h-2v-2Zm4 0h2v2h-2v-2Z" fill="currentColor"/>
+              </svg>
+              أدخل البيانات لعرض المعاينة
+            </div>
           </div>
         </div>
 
@@ -672,73 +810,129 @@
           <summary style="cursor:pointer; margin:16px 0; font-weight:600; color:var(--text-2)">
             خيارات التصميم
           </summary>
-          <div class="style-grid">
-            <div class="field">
-              <label>الحجم (px)</label>
-              <input type="number" class="input" id="optSize" min="128" max="2048" value="512">
+
+          <!-- QR Options -->
+          <div id="qrStyleOptions">
+            <div class="style-grid">
+              <div class="field">
+                <label>الحجم (px)</label>
+                <input type="number" class="input" id="optSize" min="128" max="2048" value="512">
+              </div>
+              <div class="field">
+                <label>الهامش</label>
+                <input type="number" class="input" id="optMargin" min="0" max="32" value="16">
+              </div>
+              <div class="field">
+                <label>تصحيح الأخطاء</label>
+                <select class="input" id="optECC">
+                  <option value="L">منخفض</option>
+                  <option value="M" selected>متوسط</option>
+                  <option value="Q">عالي</option>
+                  <option value="H">أعلى</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>نمط النقاط</label>
+                <select class="input" id="optDots">
+                  <option value="square">مربع</option>
+                  <option value="dots">نقاط</option>
+                  <option value="rounded" selected>دائري</option>
+                  <option value="classy">كلاسيكي</option>
+                  <option value="classy-rounded">كلاسيكي دائري</option>
+                  <option value="extra-rounded">دائري جداً</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>اللون الأمامي</label>
+                <input type="color" class="color-input" id="optFG" value="#000000">
+              </div>
+              <div class="field">
+                <label>لون الخلفية</label>
+                <input type="color" class="color-input" id="optBG" value="#ffffff">
+              </div>
+              <div class="field">
+                <label>التدرج</label>
+                <select class="input" id="optGradient">
+                  <option value="none" selected>بدون</option>
+                  <option value="linear">خطي</option>
+                  <option value="radial">دائري</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>لون التدرج 1</label>
+                <input type="color" class="color-input" id="optGrad1" value="#5de2e7">
+              </div>
+              <div class="field">
+                <label>لون التدرج 2</label>
+                <input type="color" class="color-input" id="optGrad2" value="#a78bfa">
+              </div>
+              <div class="field">
+                <label>الشعار</label>
+                <input type="file" class="input" id="optLogo" accept="image/*">
+              </div>
+              <div class="field">
+                <label>حجم الشعار %</label>
+                <input type="number" class="input" id="optLogoSize" min="10" max="40" value="20">
+              </div>
+              <div class="field">
+                <label>إخفاء خلفية الشعار</label>
+                <select class="input" id="optHideBg">
+                  <option value="false">لا</option>
+                  <option value="true">نعم</option>
+                </select>
+              </div>
             </div>
-            <div class="field">
-              <label>الهامش</label>
-              <input type="number" class="input" id="optMargin" min="0" max="32" value="16">
-            </div>
-            <div class="field">
-              <label>تصحيح الأخطاء</label>
-              <select class="input" id="optECC">
-                <option value="L">منخفض</option>
-                <option value="M" selected>متوسط</option>
-                <option value="Q">عالي</option>
-                <option value="H">أعلى</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>نمط النقاط</label>
-              <select class="input" id="optDots">
-                <option value="square">مربع</option>
-                <option value="dots">نقاط</option>
-                <option value="rounded" selected>دائري</option>
-                <option value="classy">كلاسيكي</option>
-                <option value="classy-rounded">كلاسيكي دائري</option>
-                <option value="extra-rounded">دائري جداً</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>اللون الأمامي</label>
-              <input type="color" class="color-input" id="optFG" value="#000000">
-            </div>
-            <div class="field">
-              <label>لون الخلفية</label>
-              <input type="color" class="color-input" id="optBG" value="#ffffff">
-            </div>
-            <div class="field">
-              <label>التدرج</label>
-              <select class="input" id="optGradient">
-                <option value="none" selected>بدون</option>
-                <option value="linear">خطي</option>
-                <option value="radial">دائري</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>لون التدرج 1</label>
-              <input type="color" class="color-input" id="optGrad1" value="#5de2e7">
-            </div>
-            <div class="field">
-              <label>لون التدرج 2</label>
-              <input type="color" class="color-input" id="optGrad2" value="#a78bfa">
-            </div>
-            <div class="field">
-              <label>الشعار</label>
-              <input type="file" class="input" id="optLogo" accept="image/*">
-            </div>
-            <div class="field">
-              <label>حجم الشعار %</label>
-              <input type="number" class="input" id="optLogoSize" min="10" max="40" value="20">
-            </div>
-            <div class="field">
-              <label>إخفاء خلفية الشعار</label>
-              <select class="input" id="optHideBg">
-                <option value="false">لا</option>
-                <option value="true">نعم</option>
-              </select>
+          </div>
+
+          <!-- Barcode Options -->
+          <div id="barcodeStyleOptions" style="display:none">
+            <div class="style-grid">
+              <div class="field">
+                <label>عرض الخط</label>
+                <input type="number" class="input" id="bcWidth" min="1" max="5" value="2" step="0.5">
+              </div>
+              <div class="field">
+                <label>الارتفاع (px)</label>
+                <input type="number" class="input" id="bcHeight" min="30" max="300" value="100">
+              </div>
+              <div class="field">
+                <label>إظهار النص</label>
+                <select class="input" id="bcDisplayValue">
+                  <option value="true" selected>نعم</option>
+                  <option value="false">لا</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>حجم الخط</label>
+                <input type="number" class="input" id="bcFontSize" min="8" max="36" value="16">
+              </div>
+              <div class="field">
+                <label>محاذاة النص</label>
+                <select class="input" id="bcTextAlign">
+                  <option value="center" selected>وسط</option>
+                  <option value="left">يسار</option>
+                  <option value="right">يمين</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>موضع النص</label>
+                <select class="input" id="bcTextPosition">
+                  <option value="bottom" selected>أسفل</option>
+                  <option value="top">أعلى</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>لون الخطوط</label>
+                <input type="color" class="color-input" id="bcLineColor" value="#000000">
+              </div>
+              <div class="field">
+                <label>لون الخلفية</label>
+                <input type="color" class="color-input" id="bcBackground" value="#ffffff">
+              </div>
+              <div class="field">
+                <label>الهامش (px)</label>
+                <input type="number" class="input" id="bcMargin" min="0" max="40" value="10">
+              </div>
             </div>
           </div>
         </details>
@@ -759,7 +953,7 @@
           </button>
         </div>
 
-        <!-- QR Results Grid -->
+        <!-- QR/Barcode Results Grid -->
         <div class="qr-grid" id="qrGrid"></div>
       </section>
 
@@ -775,7 +969,6 @@
           </div>
         </div>
 
-        <!-- Drop Zone -->
         <div class="drop-zone" id="dropZone">
           <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none">
             <path d="M7 16a4 4 0 0 1-.88-7.9A5 5 0 1 1 15.9 6h.1a3 3 0 0 1 1 5.82" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -785,7 +978,6 @@
           <div class="drop-zone-hint">أو استخدم الأزرار أدناه</div>
         </div>
 
-        <!-- Decoder Actions -->
         <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-top:16px">
           <button class="btn" id="pasteBtn" title="لصق (Ctrl+V)">
             <svg class="icon" viewBox="0 0 24 24" fill="none">
@@ -811,10 +1003,7 @@
           </button>
         </div>
 
-        <!-- Camera View -->
         <video id="video" playsinline></video>
-
-        <!-- Decode Results -->
         <div class="decode-results" id="decodeResults"></div>
       </section>
     </div>
@@ -836,42 +1025,27 @@
       </div>
       <div class="shortcuts-grid">
         <div class="shortcut-item">
-          <div class="shortcut-keys">
-            <span class="kbd">Ctrl</span>
-            <span class="kbd">Enter</span>
-          </div>
+          <div class="shortcut-keys"><span class="kbd">Ctrl</span><span class="kbd">Enter</span></div>
           <div class="shortcut-desc">توليد الرموز</div>
         </div>
         <div class="shortcut-item">
-          <div class="shortcut-keys">
-            <span class="kbd">Ctrl</span>
-            <span class="kbd">V</span>
-          </div>
+          <div class="shortcut-keys"><span class="kbd">Ctrl</span><span class="kbd">V</span></div>
           <div class="shortcut-desc">لصق وفك التشفير</div>
         </div>
         <div class="shortcut-item">
-          <div class="shortcut-keys">
-            <span class="kbd">Ctrl</span>
-            <span class="kbd">S</span>
-          </div>
+          <div class="shortcut-keys"><span class="kbd">Ctrl</span><span class="kbd">S</span></div>
           <div class="shortcut-desc">تنزيل الكل كملف ZIP</div>
         </div>
         <div class="shortcut-item">
-          <div class="shortcut-keys">
-            <span class="kbd">D</span>
-          </div>
+          <div class="shortcut-keys"><span class="kbd">D</span></div>
           <div class="shortcut-desc">تبديل الوضع الليلي/النهاري</div>
         </div>
         <div class="shortcut-item">
-          <div class="shortcut-keys">
-            <span class="kbd">G</span>
-          </div>
+          <div class="shortcut-keys"><span class="kbd">G</span></div>
           <div class="shortcut-desc">تشغيل/إيقاف الكاميرا</div>
         </div>
         <div class="shortcut-item">
-          <div class="shortcut-keys">
-            <span class="kbd">?</span>
-          </div>
+          <div class="shortcut-keys"><span class="kbd">?</span></div>
           <div class="shortcut-desc">عرض هذه النافذة</div>
         </div>
       </div>
@@ -880,24 +1054,44 @@
 
   <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
   <script>
-    // Initialize app
+    // ===== APP STATE =====
     const app = {
       qrInstances: [],
+      barcodeInstances: [],
       logoDataUrl: null,
       cameraStream: null,
       isScanning: false,
+      currentMode: 'qr',
+      currentBarcodeFormat: 'CODE128',
+      previewQR: null,
       settings: {}
     };
 
-    // DOM Elements
+    // ===== BARCODE TYPE DEFINITIONS =====
+    const BARCODE_TYPES = {
+      CODE128: { name: 'Code 128', hint: 'يقبل جميع أحرف ASCII - الأكثر تنوعاً واستخداماً', placeholder: 'Example-123' },
+      EAN13:   { name: 'EAN-13', hint: '12 أو 13 رقم - يُستخدم على المنتجات في أوروبا والعالم', placeholder: '5901234123457' },
+      EAN8:    { name: 'EAN-8', hint: '7 أو 8 أرقام - للمنتجات الصغيرة', placeholder: '96385074' },
+      UPC:     { name: 'UPC-A', hint: '11 أو 12 رقم - معيار المنتجات الأمريكية', placeholder: '123456789012' },
+      UPCE:    { name: 'UPC-E', hint: '6 إلى 8 أرقام - النسخة المختصرة', placeholder: '01234565' },
+      CODE39:  { name: 'Code 39', hint: 'أحرف كبيرة A-Z وأرقام 0-9 ورموز - $ / . + %', placeholder: 'CODE-39' },
+      CODE93:  { name: 'Code 93', hint: 'مشابه لـ Code 39 لكن أكثر كثافة', placeholder: 'CODE93' },
+      ITF14:   { name: 'ITF-14', hint: '13 أو 14 رقم - لصناديق الشحن والحاويات', placeholder: '98249880215005' },
+      codabar: { name: 'Codabar', hint: 'أرقام 0-9 ورموز - $ : / . + - يبدأ وينتهي بـ A-D', placeholder: 'A12345B' },
+      MSI:     { name: 'MSI', hint: 'أرقام فقط - لإدارة المخزون والمستودعات', placeholder: '1234567' },
+      pharmacode: { name: 'Pharmacode', hint: 'رقم بين 3 و 131070 - خاص بصناعة الأدوية', placeholder: '1234' }
+    };
+
+    // ===== DOM ELEMENTS =====
     const $ = s => document.querySelector(s);
     const $$ = s => document.querySelectorAll(s);
-    
+
     const els = {
       multiInput: $('#multiInput'),
       lineNumbers: $('#lineNumbers'),
@@ -919,10 +1113,16 @@
       cameraBtn: $('#cameraBtn'),
       video: $('#video'),
       decodeResults: $('#decodeResults'),
-      toastContainer: $('#toastContainer')
+      toastContainer: $('#toastContainer'),
+      previewCanvas: $('#previewCanvas'),
+      barcodeSelector: $('#barcodeSelector'),
+      qrBuilders: $('#qrBuilders'),
+      qrStyleOptions: $('#qrStyleOptions'),
+      barcodeStyleOptions: $('#barcodeStyleOptions'),
+      barcodeHint: $('#barcodeHint')
     };
 
-    // Initialize
+    // ===== INITIALIZATION =====
     function init() {
       loadSettings();
       setupEventListeners();
@@ -930,10 +1130,10 @@
       checkFeatures();
     }
 
-    // Settings Management
+    // ===== SETTINGS =====
     function loadSettings() {
       try {
-        const saved = localStorage.getItem('qr-app-settings');
+        const saved = localStorage.getItem('qr-app-settings-v3');
         if (saved) {
           app.settings = JSON.parse(saved);
           applySettings();
@@ -944,6 +1144,8 @@
     function saveSettings() {
       const settings = {
         theme: document.body.classList.contains('dark') ? 'dark' : 'light',
+        mode: app.currentMode,
+        barcodeFormat: app.currentBarcodeFormat,
         size: $('#optSize').value,
         margin: $('#optMargin').value,
         ecc: $('#optECC').value,
@@ -954,49 +1156,83 @@
         grad1: $('#optGrad1').value,
         grad2: $('#optGrad2').value,
         logoSize: $('#optLogoSize').value,
-        hideBg: $('#optHideBg').value
+        hideBg: $('#optHideBg').value,
+        bcWidth: $('#bcWidth').value,
+        bcHeight: $('#bcHeight').value,
+        bcDisplayValue: $('#bcDisplayValue').value,
+        bcFontSize: $('#bcFontSize').value,
+        bcTextAlign: $('#bcTextAlign').value,
+        bcTextPosition: $('#bcTextPosition').value,
+        bcLineColor: $('#bcLineColor').value,
+        bcBackground: $('#bcBackground').value,
+        bcMargin: $('#bcMargin').value
       };
-      localStorage.setItem('qr-app-settings', JSON.stringify(settings));
+      localStorage.setItem('qr-app-settings-v3', JSON.stringify(settings));
       app.settings = settings;
     }
 
     function applySettings() {
-      if (app.settings.theme === 'dark') {
-        document.body.classList.add('dark');
+      const s = app.settings;
+      if (s.theme === 'dark') document.body.classList.add('dark');
+      if (s.mode) switchMode(s.mode, false);
+      if (s.barcodeFormat) {
+        app.currentBarcodeFormat = s.barcodeFormat;
+        $$('.barcode-format-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.format === s.barcodeFormat);
+        });
+        updateBarcodeHint();
       }
-      Object.keys(app.settings).forEach(key => {
-        if (key !== 'theme') {
-          const el = $(`#opt${key.charAt(0).toUpperCase() + key.slice(1)}`);
-          if (el) el.value = app.settings[key];
+      const fieldMap = {
+        size:'optSize', margin:'optMargin', ecc:'optECC', dots:'optDots',
+        fg:'optFG', bg:'optBG', gradient:'optGradient', grad1:'optGrad1',
+        grad2:'optGrad2', logoSize:'optLogoSize', hideBg:'optHideBg',
+        bcWidth:'bcWidth', bcHeight:'bcHeight', bcDisplayValue:'bcDisplayValue',
+        bcFontSize:'bcFontSize', bcTextAlign:'bcTextAlign', bcTextPosition:'bcTextPosition',
+        bcLineColor:'bcLineColor', bcBackground:'bcBackground', bcMargin:'bcMargin'
+      };
+      Object.entries(fieldMap).forEach(([key, id]) => {
+        if (s[key] !== undefined) {
+          const el = $(`#${id}`);
+          if (el) el.value = s[key];
         }
       });
     }
 
-    // Event Listeners
+    // ===== EVENT LISTENERS =====
     function setupEventListeners() {
-      // Theme
       els.themeBtn.addEventListener('click', toggleTheme);
-      
-      // Help
       els.helpBtn.addEventListener('click', () => showModal(els.helpModal));
       els.closeHelp.addEventListener('click', () => hideModal(els.helpModal));
-      els.helpModal.addEventListener('click', e => {
-        if (e.target === els.helpModal) hideModal(els.helpModal);
-      });
+      els.helpModal.addEventListener('click', e => { if (e.target === els.helpModal) hideModal(els.helpModal); });
 
-      // Generator
-      els.generateBtn.addEventListener('click', generateQRCodes);
+      els.generateBtn.addEventListener('click', generateCodes);
       els.downloadAllBtn.addEventListener('click', downloadAll);
       els.clearAllBtn.addEventListener('click', clearAll);
-      els.multiInput.addEventListener('input', updateLineNumbers);
-      els.multiInput.addEventListener('keydown', e => {
-        if (e.ctrlKey && e.key === 'Enter') {
-          e.preventDefault();
-          generateQRCodes();
-        }
+      els.multiInput.addEventListener('input', () => {
+        updateLineNumbers();
+        debouncedPreview();
+        debouncedSave();
       });
 
-      // Builders
+      // Code type tabs
+      $$('.code-tab').forEach(tab => {
+        tab.addEventListener('click', () => switchMode(tab.dataset.mode));
+      });
+
+      // Barcode format buttons
+      $$('.barcode-format-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          $$('.barcode-format-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          app.currentBarcodeFormat = btn.dataset.format;
+          updateBarcodeHint();
+          updateBarcodeInputPlaceholder();
+          debouncedPreview();
+          saveSettings();
+        });
+      });
+
+      // QR Builders
       $$('.builder-btn').forEach(btn => {
         btn.addEventListener('click', () => openBuilder(btn.dataset.type));
       });
@@ -1007,135 +1243,153 @@
       els.pasteBtn.addEventListener('click', pasteFromClipboard);
       els.fileInput.addEventListener('change', handleFileSelect);
       els.cameraBtn.addEventListener('click', toggleCamera);
-      
-      // Drag & Drop
       setupDragDrop();
-
-      // Keyboard Shortcuts
       setupKeyboardShortcuts();
 
       // Logo
       $('#optLogo').addEventListener('change', handleLogoUpload);
 
-      // Save settings on change
-      $$('.input, .color-input, select').forEach(el => {
-        el.addEventListener('change', saveSettings);
+      // Save settings on change & update preview
+      $$('#qrStyleOptions .input, #qrStyleOptions .color-input, #qrStyleOptions select').forEach(el => {
+        el.addEventListener('change', () => { saveSettings(); debouncedPreview(); });
       });
+      $$('#barcodeStyleOptions .input, #barcodeStyleOptions .color-input, #barcodeStyleOptions select').forEach(el => {
+        el.addEventListener('change', () => { saveSettings(); debouncedPreview(); });
+      });
+
+      // Preview actions
+      $('#copyPreviewPng').addEventListener('click', () => copyPreview('png'));
+      $('#copyPreviewSvg').addEventListener('click', () => copyPreview('svg'));
+      $('#downloadPreview').addEventListener('click', downloadPreviewImage);
     }
 
-    // Theme Toggle
+    // ===== MODE SWITCHING =====
+    function switchMode(mode, animate = true) {
+      app.currentMode = mode;
+      $$('.code-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.mode === mode);
+      });
+
+      if (mode === 'qr') {
+        els.barcodeSelector.classList.remove('show');
+        els.qrBuilders.style.display = '';
+        els.qrStyleOptions.style.display = '';
+        els.barcodeStyleOptions.style.display = 'none';
+        els.multiInput.placeholder = 'https://example.com\nنص حر\nبيانات أخرى...';
+      } else {
+        els.barcodeSelector.classList.add('show');
+        els.qrBuilders.style.display = 'none';
+        els.builderForm.classList.remove('show');
+        els.qrStyleOptions.style.display = 'none';
+        els.barcodeStyleOptions.style.display = '';
+        updateBarcodeInputPlaceholder();
+      }
+      debouncedPreview();
+      if (animate) saveSettings();
+    }
+
+    function updateBarcodeHint() {
+      const info = BARCODE_TYPES[app.currentBarcodeFormat];
+      if (info) {
+        els.barcodeHint.textContent = info.name + ': ' + info.hint;
+      }
+    }
+
+    function updateBarcodeInputPlaceholder() {
+      const info = BARCODE_TYPES[app.currentBarcodeFormat];
+      if (info) {
+        els.multiInput.placeholder = info.placeholder + '\n' + info.hint;
+      }
+    }
+
+    // ===== THEME =====
     function toggleTheme() {
       document.body.classList.toggle('dark');
       saveSettings();
       showToast(document.body.classList.contains('dark') ? 'الوضع النهاري' : 'الوضع الليلي');
     }
 
-    // Line Numbers
+    // ===== LINE NUMBERS =====
     function updateLineNumbers() {
       const lines = els.multiInput.value.split('\n').length;
       els.lineNumbers.textContent = Array.from({length: lines}, (_, i) => i + 1).join('\n');
     }
 
-    // Builder Functions
+    // ===== QR BUILDERS =====
     const builders = {
-      text: {
-        fields: [],
-        build: () => ''
-      },
+      text: { fields: [], build: () => '' },
       wifi: {
         fields: [
-          {id: 'ssid', label: 'اسم الشبكة', type: 'text', required: true},
-          {id: 'password', label: 'كلمة المرور', type: 'password'},
-          {id: 'type', label: 'نوع التشفير', type: 'select', options: ['WPA', 'WEP', 'nopass'], value: 'WPA'},
-          {id: 'hidden', label: 'شبكة مخفية', type: 'select', options: ['لا', 'نعم'], value: 'لا'}
+          {id:'ssid', label:'اسم الشبكة', type:'text', required:true},
+          {id:'password', label:'كلمة المرور', type:'password'},
+          {id:'type', label:'نوع التشفير', type:'select', options:['WPA','WEP','nopass'], value:'WPA'},
+          {id:'hidden', label:'شبكة مخفية', type:'select', options:['لا','نعم'], value:'لا'}
         ],
-        build: (data) => {
-          const hidden = data.hidden === 'نعم' ? 'H:true;' : '';
-          return `WIFI:T:${data.type};S:${data.ssid};P:${data.password || ''};${hidden};`;
-        }
+        build: d => `WIFI:T:${d.type};S:${d.ssid};P:${d.password||''};${d.hidden==='نعم'?'H:true;':''};`
       },
       vcard: {
         fields: [
-          {id: 'name', label: 'الاسم الكامل', type: 'text', required: true},
-          {id: 'phone', label: 'الهاتف', type: 'tel'},
-          {id: 'email', label: 'البريد الإلكتروني', type: 'email'},
-          {id: 'org', label: 'المنظمة', type: 'text'},
-          {id: 'title', label: 'المسمى الوظيفي', type: 'text'}
+          {id:'name', label:'الاسم الكامل', type:'text', required:true},
+          {id:'phone', label:'الهاتف', type:'tel'},
+          {id:'email', label:'البريد الإلكتروني', type:'email'},
+          {id:'org', label:'المنظمة', type:'text'},
+          {id:'title', label:'المسمى الوظيفي', type:'text'}
         ],
-        build: (data) => {
-          return `BEGIN:VCARD\nVERSION:3.0\nFN:${data.name}\n${data.phone ? `TEL:${data.phone}\n` : ''}${data.email ? `EMAIL:${data.email}\n` : ''}${data.org ? `ORG:${data.org}\n` : ''}${data.title ? `TITLE:${data.title}\n` : ''}END:VCARD`;
-        }
+        build: d => `BEGIN:VCARD\nVERSION:3.0\nFN:${d.name}\n${d.phone?`TEL:${d.phone}\n`:''}${d.email?`EMAIL:${d.email}\n`:''}${d.org?`ORG:${d.org}\n`:''}${d.title?`TITLE:${d.title}\n`:''}END:VCARD`
       },
       email: {
         fields: [
-          {id: 'to', label: 'إلى', type: 'email', required: true},
-          {id: 'subject', label: 'الموضوع', type: 'text'},
-          {id: 'body', label: 'النص', type: 'textarea'}
+          {id:'to', label:'إلى', type:'email', required:true},
+          {id:'subject', label:'الموضوع', type:'text'},
+          {id:'body', label:'النص', type:'textarea'}
         ],
-        build: (data) => {
-          return `mailto:${data.to}?subject=${encodeURIComponent(data.subject || '')}&body=${encodeURIComponent(data.body || '')}`;
-        }
+        build: d => `mailto:${d.to}?subject=${encodeURIComponent(d.subject||'')}&body=${encodeURIComponent(d.body||'')}`
       },
       sms: {
         fields: [
-          {id: 'number', label: 'رقم الهاتف', type: 'tel', required: true},
-          {id: 'message', label: 'الرسالة', type: 'textarea'}
+          {id:'number', label:'رقم الهاتف', type:'tel', required:true},
+          {id:'message', label:'الرسالة', type:'textarea'}
         ],
-        build: (data) => {
-          return `SMSTO:${data.number}:${data.message || ''}`;
-        }
+        build: d => `SMSTO:${d.number}:${d.message||''}`
       },
       geo: {
         fields: [
-          {id: 'lat', label: 'خط العرض', type: 'number', required: true, step: 'any'},
-          {id: 'lng', label: 'خط الطول', type: 'number', required: true, step: 'any'}
+          {id:'lat', label:'خط العرض', type:'number', required:true, step:'any'},
+          {id:'lng', label:'خط الطول', type:'number', required:true, step:'any'}
         ],
-        build: (data) => {
-          return `geo:${data.lat},${data.lng}`;
-        }
+        build: d => `geo:${d.lat},${d.lng}`
       }
     };
 
     function openBuilder(type) {
-      // Reset active states
       $$('.builder-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.closest('.builder-btn').classList.add('active');
-      
+      const clickedBtn = document.querySelector(`.builder-btn[data-type="${type}"]`);
+      if (clickedBtn) clickedBtn.classList.add('active');
+
       const builder = builders[type];
       if (!builder) return;
-
       els.builderFields.innerHTML = '';
-      
       if (type === 'text') {
         els.builderForm.classList.remove('show');
         els.multiInput.focus();
         return;
       }
-
       builder.fields.forEach(field => {
         const div = document.createElement('div');
         div.className = 'field';
-        
         let input = '';
         if (field.type === 'select') {
-          input = `<select class="input" id="builder_${field.id}" ${field.required ? 'required' : ''}>`;
-          field.options.forEach(opt => {
-            input += `<option value="${opt}" ${opt === field.value ? 'selected' : ''}>${opt}</option>`;
-          });
+          input = `<select class="input" id="builder_${field.id}" ${field.required?'required':''}>`;
+          field.options.forEach(opt => { input += `<option value="${opt}" ${opt===field.value?'selected':''}>${opt}</option>`; });
           input += '</select>';
         } else if (field.type === 'textarea') {
-          input = `<textarea class="input" id="builder_${field.id}" rows="3" ${field.required ? 'required' : ''}></textarea>`;
+          input = `<textarea class="input" id="builder_${field.id}" rows="3" ${field.required?'required':''}></textarea>`;
         } else {
-          input = `<input type="${field.type}" class="input" id="builder_${field.id}" ${field.required ? 'required' : ''} ${field.step ? `step="${field.step}"` : ''}>`;
+          input = `<input type="${field.type}" class="input" id="builder_${field.id}" ${field.required?'required':''} ${field.step?`step="${field.step}"`:''}>`;
         }
-        
-        div.innerHTML = `
-          <label>${field.label} ${field.required ? '<span style="color:var(--bad)">*</span>' : ''}</label>
-          ${input}
-        `;
+        div.innerHTML = `<label>${field.label} ${field.required?'<span style="color:var(--bad)">*</span>':''}</label>${input}`;
         els.builderFields.appendChild(div);
       });
-
       els.builderForm.classList.add('show');
       els.builderForm.dataset.type = type;
     }
@@ -1149,69 +1403,208 @@
       const type = els.builderForm.dataset.type;
       const builder = builders[type];
       if (!builder) return;
-
       const data = {};
       let valid = true;
-
       builder.fields.forEach(field => {
         const input = $(`#builder_${field.id}`);
         if (field.required && !input.value.trim()) {
           valid = false;
-          input.classList.add('error');
+          input.style.borderColor = 'var(--bad)';
         } else {
-          input.classList.remove('error');
+          input.style.borderColor = '';
           data[field.id] = input.value.trim();
         }
       });
-
-      if (!valid) {
-        showToast('يرجى ملء جميع الحقول المطلوبة', 'error');
-        return;
-      }
-
+      if (!valid) { showToast('يرجى ملء جميع الحقول المطلوبة', 'error'); return; }
       const qrData = builder.build(data);
-      if (els.multiInput.value) {
-        els.multiInput.value += '\n';
-      }
+      if (els.multiInput.value) els.multiInput.value += '\n';
       els.multiInput.value += qrData;
       updateLineNumbers();
       closeBuilder();
+      debouncedPreview();
       showToast('تمت الإضافة للقائمة', 'success');
     }
 
-    // QR Generation
+    // ===== LIVE PREVIEW =====
+    const debouncedPreview = debounce(updatePreview, 300);
+    const debouncedSave = debounce(() => saveToLocalStorage(), 500);
+
+    function updatePreview() {
+      const firstLine = els.multiInput.value.split('\n')[0]?.trim();
+      if (!firstLine) {
+        els.previewCanvas.innerHTML = `<div class="preview-placeholder">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" style="width:48px;height:48px;margin:0 auto 12px;display:block;opacity:0.3">
+            <path d="M3 3h7v7H3V3Zm11 0h7v7h-7V3ZM3 14h7v7H3v-7Z" fill="currentColor"/>
+            <path d="M14 14h2v2h-2v-2Zm4 0h2v2h-2v-2Zm-4 4h2v2h-2v-2Zm4 0h2v2h-2v-2Z" fill="currentColor"/>
+          </svg>
+          أدخل البيانات لعرض المعاينة</div>`;
+        app.previewQR = null;
+        return;
+      }
+
+      if (app.currentMode === 'qr') {
+        updateQRPreview(firstLine);
+      } else {
+        updateBarcodePreview(firstLine);
+      }
+    }
+
+    function updateQRPreview(data) {
+      els.previewCanvas.innerHTML = '';
+      const options = getQROptions();
+      const qr = new QRCodeStyling({
+        ...options,
+        width: 220,
+        height: 220,
+        data
+      });
+      qr.append(els.previewCanvas);
+      app.previewQR = qr;
+    }
+
+    function updateBarcodePreview(data) {
+      els.previewCanvas.innerHTML = '<svg id="previewBarcodeSvg"></svg>';
+      try {
+        JsBarcode('#previewBarcodeSvg', data, {
+          format: app.currentBarcodeFormat,
+          ...getBarcodeOptions()
+        });
+        app.previewQR = null;
+      } catch(e) {
+        els.previewCanvas.innerHTML = `<div class="preview-error">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" style="width:32px;height:32px;margin:0 auto 8px;display:block;color:var(--bad)">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          بيانات غير صالحة لنوع ${BARCODE_TYPES[app.currentBarcodeFormat]?.name || app.currentBarcodeFormat}<br>
+          <small style="opacity:0.7">${BARCODE_TYPES[app.currentBarcodeFormat]?.hint || ''}</small>
+        </div>`;
+      }
+    }
+
+    // ===== COPY PREVIEW =====
+    async function copyPreview(format) {
+      const firstLine = els.multiInput.value.split('\n')[0]?.trim();
+      if (!firstLine) { showToast('لا توجد بيانات للنسخ', 'warning'); return; }
+
+      try {
+        if (app.currentMode === 'qr') {
+          if (format === 'svg') {
+            if (!app.previewQR) return;
+            const blob = await app.previewQR.getRawData('svg');
+            await navigator.clipboard.writeText(await blob.text());
+          } else {
+            const pngBlob = await exportQRHighResPng(firstLine);
+            await navigator.clipboard.write([new ClipboardItem({'image/png': pngBlob})]);
+          }
+        } else {
+          const svg = els.previewCanvas.querySelector('svg');
+          if (!svg) { showToast('لا توجد معاينة للنسخ', 'warning'); return; }
+          if (format === 'svg') {
+            await navigator.clipboard.writeText(new XMLSerializer().serializeToString(svg));
+          } else {
+            const pngBlob = await svgToPngBlob(svg, 1000);
+            await navigator.clipboard.write([new ClipboardItem({'image/png': pngBlob})]);
+          }
+        }
+        showToast(`تم نسخ ${format.toUpperCase()} إلى الحافظة`, 'success');
+      } catch(e) {
+        showToast('فشل النسخ. تحقق من الأذونات', 'error');
+      }
+    }
+
+    async function downloadPreviewImage() {
+      const firstLine = els.multiInput.value.split('\n')[0]?.trim();
+      if (!firstLine) { showToast('لا توجد بيانات للتحميل', 'warning'); return; }
+      const filename = slugify(getCodeTitle(firstLine));
+
+      if (app.currentMode === 'qr') {
+        const blob = await exportQRHighResPng(firstLine);
+        saveAs(blob, filename + '.png');
+      } else {
+        const svg = els.previewCanvas.querySelector('svg');
+        if (!svg) return;
+        const blob = await svgToPngBlob(svg, 1000);
+        saveAs(blob, filename + '.png');
+      }
+      showToast('جاري التحميل', 'success');
+    }
+
+    function svgToPngBlob(svgEl, minSize = 1000) {
+      return new Promise((resolve, reject) => {
+        const clone = svgEl.cloneNode(true);
+        // Make background transparent
+        const rects = clone.querySelectorAll('rect');
+        if (rects.length > 0 && !rects[0].previousElementSibling) {
+          rects[0].setAttribute('fill', 'transparent');
+          rects[0].setAttribute('fill-opacity', '0');
+        }
+        const svgData = new XMLSerializer().serializeToString(clone);
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        const blob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        img.onload = () => {
+          const w = img.naturalWidth || 300;
+          const h = img.naturalHeight || 300;
+          const scale = Math.max(minSize / Math.min(w, h), 2);
+          canvas.width = Math.max(Math.round(w * scale), minSize);
+          canvas.height = Math.max(Math.round(h * scale), minSize);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          URL.revokeObjectURL(url);
+          canvas.toBlob(b => resolve(b), 'image/png');
+        };
+        img.onerror = reject;
+        img.src = url;
+      });
+    }
+
+    async function exportQRHighResPng(data) {
+      const options = getQROptions();
+      const size = Math.max(options.width, 1000);
+      const tempQR = new QRCodeStyling({
+        ...options,
+        width: size,
+        height: size,
+        data,
+        backgroundOptions: { color: 'transparent' }
+      });
+      const tempDiv = document.createElement('div');
+      tempDiv.style.cssText = 'position:fixed;left:-9999px;top:-9999px;visibility:hidden';
+      document.body.appendChild(tempDiv);
+      tempQR.append(tempDiv);
+      await new Promise(r => setTimeout(r, 150));
+      const blob = await tempQR.getRawData('png');
+      document.body.removeChild(tempDiv);
+      return blob;
+    }
+
+    // ===== QR OPTIONS =====
     function getQROptions() {
       const gradientType = $('#optGradient').value;
       let gradient = null;
-      
       if (gradientType !== 'none') {
         gradient = {
-          type: gradientType,
-          rotation: 0,
+          type: gradientType, rotation: 0,
           colorStops: [
             {offset: 0, color: $('#optGrad1').value},
             {offset: 1, color: $('#optGrad2').value}
           ]
         };
       }
-
       const dotsColor = gradient || $('#optFG').value;
-      
       return {
         width: parseInt($('#optSize').value),
         height: parseInt($('#optSize').value),
         margin: parseInt($('#optMargin').value),
-        qrOptions: {
-          errorCorrectionLevel: $('#optECC').value
-        },
+        qrOptions: { errorCorrectionLevel: $('#optECC').value },
         dotsOptions: {
           type: $('#optDots').value,
           color: gradient ? undefined : dotsColor,
           gradient: gradient
         },
-        backgroundOptions: {
-          color: $('#optBG').value
-        },
+        backgroundOptions: { color: $('#optBG').value },
         cornersSquareOptions: {
           type: 'extra-rounded',
           color: gradient ? undefined : dotsColor,
@@ -1226,46 +1619,65 @@
         imageOptions: {
           hideBackgroundDots: $('#optHideBg').value === 'true',
           imageSize: parseInt($('#optLogoSize').value) / 100,
-          margin: 4,
-          crossOrigin: 'anonymous'
+          margin: 4, crossOrigin: 'anonymous'
         }
       };
     }
 
-    async function generateQRCodes() {
-      const lines = els.multiInput.value.split('\n').filter(line => line.trim());
-      
-      if (lines.length === 0) {
-        showToast('لا توجد بيانات لتوليد الرموز', 'warning');
-        return;
-      }
+    // ===== BARCODE OPTIONS =====
+    function getBarcodeOptions() {
+      return {
+        width: parseFloat($('#bcWidth').value),
+        height: parseInt($('#bcHeight').value),
+        displayValue: $('#bcDisplayValue').value === 'true',
+        fontSize: parseInt($('#bcFontSize').value),
+        textAlign: $('#bcTextAlign').value,
+        textPosition: $('#bcTextPosition').value,
+        lineColor: $('#bcLineColor').value,
+        background: $('#bcBackground').value,
+        margin: parseInt($('#bcMargin').value),
+        font: 'Vazirmatn, monospace'
+      };
+    }
+
+    // ===== CODE GENERATION =====
+    async function generateCodes() {
+      const lines = els.multiInput.value.split('\n').filter(l => l.trim());
+      if (lines.length === 0) { showToast('لا توجد بيانات لتوليد الرموز', 'warning'); return; }
 
       els.qrGrid.innerHTML = '';
       app.qrInstances = [];
+      app.barcodeInstances = [];
 
-      const options = getQROptions();
-      
-      for (let i = 0; i < lines.length; i++) {
-        const data = lines[i].trim();
-        await createQRCard(data, i, options);
+      if (app.currentMode === 'qr') {
+        const options = getQROptions();
+        for (let i = 0; i < lines.length; i++) {
+          await createQRCard(lines[i].trim(), i, options);
+        }
+      } else {
+        const options = getBarcodeOptions();
+        for (let i = 0; i < lines.length; i++) {
+          createBarcodeCard(lines[i].trim(), i, options);
+        }
       }
 
       els.downloadAllBtn.disabled = false;
-      showToast(`تم إنشاء ${lines.length} رمز QR`, 'success');
+      const typeName = app.currentMode === 'qr' ? 'QR' : BARCODE_TYPES[app.currentBarcodeFormat]?.name || 'باركود';
+      showToast(`تم إنشاء ${lines.length} رمز ${typeName}`, 'success');
     }
 
     async function createQRCard(data, index, options) {
       const card = document.createElement('div');
       card.className = 'qr-card';
       card.style.animationDelay = `${index * 0.05}s`;
-
-      const title = getQRTitle(data);
+      const title = getCodeTitle(data);
       const id = 'qr-' + Date.now() + '-' + index;
 
       card.innerHTML = `
         <div class="qr-card-header">
-          <div class="qr-card-title" title="${data}">${title}</div>
-          <button class="btn icon-only" onclick="removeQR('${id}')" title="حذف">
+          <div class="qr-card-title" title="${escapeHtml(data)}">${escapeHtml(title)}</div>
+          <span class="qr-card-badge">QR</span>
+          <button class="btn icon-only" onclick="removeCode('${id}')" title="حذف">
             <svg class="icon" viewBox="0 0 24 24" fill="none">
               <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
@@ -1273,31 +1685,59 @@
         </div>
         <div class="qr-preview" id="${id}"></div>
         <div class="qr-actions">
-          <button class="btn" onclick="copyQR('${id}', 'png')">نسخ PNG</button>
-          <button class="btn" onclick="copyQR('${id}', 'svg')">نسخ SVG</button>
-          <button class="btn good" onclick="downloadQR('${id}', 'png')">حفظ PNG</button>
-          <button class="btn good" onclick="downloadQR('${id}', 'svg')">حفظ SVG</button>
+          <button class="btn" onclick="copyCode('${id}', 'png')">نسخ PNG</button>
+          <button class="btn" onclick="copyCode('${id}', 'svg')">نسخ SVG</button>
+          <button class="btn good" onclick="downloadCode('${id}', 'png')">حفظ PNG</button>
+          <button class="btn good" onclick="downloadCode('${id}', 'svg')">حفظ SVG</button>
+        </div>`;
+
+      els.qrGrid.appendChild(card);
+      const qr = new QRCodeStyling({ ...options, data });
+      qr.append(document.getElementById(id));
+      app.qrInstances.push({ id, data, title, instance: qr, type: 'qr' });
+    }
+
+    function createBarcodeCard(data, index, options) {
+      const card = document.createElement('div');
+      card.className = 'qr-card';
+      card.style.animationDelay = `${index * 0.05}s`;
+      const title = getCodeTitle(data);
+      const id = 'bc-' + Date.now() + '-' + index;
+      const formatName = BARCODE_TYPES[app.currentBarcodeFormat]?.name || app.currentBarcodeFormat;
+
+      card.innerHTML = `
+        <div class="qr-card-header">
+          <div class="qr-card-title" title="${escapeHtml(data)}">${escapeHtml(title)}</div>
+          <span class="qr-card-badge">${formatName}</span>
+          <button class="btn icon-only" onclick="removeCode('${id}')" title="حذف">
+            <svg class="icon" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
         </div>
-      `;
+        <div class="qr-preview" id="${id}"><svg id="svg-${id}"></svg></div>
+        <div class="qr-actions">
+          <button class="btn" onclick="copyCode('${id}', 'png')">نسخ PNG</button>
+          <button class="btn" onclick="copyCode('${id}', 'svg')">نسخ SVG</button>
+          <button class="btn good" onclick="downloadCode('${id}', 'png')">حفظ PNG</button>
+          <button class="btn good" onclick="downloadCode('${id}', 'svg')">حفظ SVG</button>
+        </div>`;
 
       els.qrGrid.appendChild(card);
 
-      const qr = new QRCodeStyling({
-        ...options,
-        data
-      });
-      
-      qr.append(document.getElementById(id));
-      
-      app.qrInstances.push({
-        id,
-        data,
-        title,
-        instance: qr
-      });
+      try {
+        JsBarcode(`#svg-${id}`, data, {
+          format: app.currentBarcodeFormat,
+          ...options
+        });
+        app.barcodeInstances.push({ id, data, title, format: app.currentBarcodeFormat, type: 'barcode' });
+      } catch(e) {
+        document.getElementById(id).innerHTML = `<div class="preview-error" style="padding:20px;font-size:13px">
+          بيانات غير صالحة: ${escapeHtml(data)}</div>`;
+      }
     }
 
-    function getQRTitle(data) {
+    function getCodeTitle(data) {
       try {
         const url = new URL(data);
         return url.hostname.replace('www.', '');
@@ -1306,68 +1746,110 @@
       }
     }
 
-    function removeQR(id) {
-      const index = app.qrInstances.findIndex(q => q.id === id);
-      if (index > -1) {
-        app.qrInstances.splice(index, 1);
-        document.querySelector(`[id="${id}"]`).closest('.qr-card').remove();
-        
-        if (app.qrInstances.length === 0) {
-          els.downloadAllBtn.disabled = true;
-        }
+    // ===== CODE ACTIONS =====
+    window.removeCode = function(id) {
+      const qrIdx = app.qrInstances.findIndex(q => q.id === id);
+      const bcIdx = app.barcodeInstances.findIndex(q => q.id === id);
+      if (qrIdx > -1) app.qrInstances.splice(qrIdx, 1);
+      if (bcIdx > -1) app.barcodeInstances.splice(bcIdx, 1);
+
+      const el = document.getElementById(id);
+      if (el) el.closest('.qr-card').remove();
+      if (app.qrInstances.length === 0 && app.barcodeInstances.length === 0) {
+        els.downloadAllBtn.disabled = true;
       }
-    }
+    };
 
-    async function copyQR(id, format) {
+    window.copyCode = async function(id, format) {
       const qr = app.qrInstances.find(q => q.id === id);
-      if (!qr) return;
+      if (qr) {
+        try {
+          if (format === 'svg') {
+            const blob = await qr.instance.getRawData('svg');
+            await navigator.clipboard.writeText(await blob.text());
+          } else {
+            const pngBlob = await exportQRHighResPng(qr.data);
+            await navigator.clipboard.write([new ClipboardItem({'image/png': pngBlob})]);
+          }
+          showToast(`تم نسخ ${format.toUpperCase()}`, 'success');
+        } catch(e) { showToast('فشل النسخ', 'error'); }
+        return;
+      }
 
-      try {
-        const blob = await qr.instance.getRawData(format);
-        
+      const bc = app.barcodeInstances.find(q => q.id === id);
+      if (bc) {
+        const svg = document.querySelector(`#${id} svg`);
+        if (!svg) return;
+        try {
+          if (format === 'svg') {
+            await navigator.clipboard.writeText(new XMLSerializer().serializeToString(svg));
+          } else {
+            const pngBlob = await svgToPngBlob(svg, 1000);
+            await navigator.clipboard.write([new ClipboardItem({'image/png': pngBlob})]);
+          }
+          showToast(`تم نسخ ${format.toUpperCase()}`, 'success');
+        } catch(e) { showToast('فشل النسخ', 'error'); }
+      }
+    };
+
+    window.downloadCode = async function(id, format) {
+      const qr = app.qrInstances.find(q => q.id === id);
+      if (qr) {
         if (format === 'svg') {
-          const text = await blob.text();
-          await navigator.clipboard.writeText(text);
+          const blob = await qr.instance.getRawData('svg');
+          saveAs(blob, `${slugify(qr.title)}.svg`);
         } else {
-          const item = new ClipboardItem({'image/png': blob});
-          await navigator.clipboard.write([item]);
+          const pngBlob = await exportQRHighResPng(qr.data);
+          saveAs(pngBlob, `${slugify(qr.title)}.png`);
         }
-        
-        showToast(`تم نسخ ${format.toUpperCase()} إلى الحافظة`, 'success');
-      } catch (e) {
-        showToast('فشل النسخ. تحقق من الأذونات', 'error');
+        return;
       }
-    }
+      const bc = app.barcodeInstances.find(q => q.id === id);
+      if (bc) {
+        const svg = document.querySelector(`#${id} svg`);
+        if (!svg) return;
+        if (format === 'svg') {
+          const svgData = new XMLSerializer().serializeToString(svg);
+          const blob = new Blob([svgData], {type: 'image/svg+xml'});
+          saveAs(blob, `${slugify(bc.title)}.svg`);
+        } else {
+          const pngBlob = await svgToPngBlob(svg, 1000);
+          saveAs(pngBlob, `${slugify(bc.title)}.png`);
+        }
+      }
+    };
 
-    async function downloadQR(id, format) {
-      const qr = app.qrInstances.find(q => q.id === id);
-      if (!qr) return;
-
-      const blob = await qr.instance.getRawData(format);
-      const filename = `${slugify(qr.title)}.${format}`;
-      saveAs(blob, filename);
-    }
-
+    // ===== DOWNLOAD ALL =====
     async function downloadAll() {
-      if (app.qrInstances.length === 0) return;
+      const allItems = [...app.qrInstances, ...app.barcodeInstances];
+      if (allItems.length === 0) return;
 
       const zip = new JSZip();
       const pngFolder = zip.folder('PNG');
       const svgFolder = zip.folder('SVG');
 
-      for (const qr of app.qrInstances) {
-        const [pngBlob, svgBlob] = await Promise.all([
-          qr.instance.getRawData('png'),
-          qr.instance.getRawData('svg')
-        ]);
-        
-        const filename = slugify(qr.title);
-        pngFolder.file(`${filename}.png`, pngBlob);
-        svgFolder.file(`${filename}.svg`, svgBlob);
+      for (const item of allItems) {
+        const filename = slugify(item.title);
+        if (item.type === 'qr') {
+          const [pngBlob, svgBlob] = await Promise.all([
+            exportQRHighResPng(item.data),
+            item.instance.getRawData('svg')
+          ]);
+          pngFolder.file(`${filename}.png`, pngBlob);
+          svgFolder.file(`${filename}.svg`, svgBlob);
+        } else {
+          const svg = document.querySelector(`#${item.id} svg`);
+          if (svg) {
+            const svgData = new XMLSerializer().serializeToString(svg);
+            svgFolder.file(`${filename}.svg`, svgData);
+            const pngBlob = await svgToPngBlob(svg, 1000);
+            pngFolder.file(`${filename}.png`, pngBlob);
+          }
+        }
       }
 
       const content = await zip.generateAsync({type: 'blob'});
-      saveAs(content, 'QR-Codes.zip');
+      saveAs(content, 'Codes.zip');
       showToast('جاري تنزيل ملف ZIP', 'success');
     }
 
@@ -1376,83 +1858,62 @@
       updateLineNumbers();
       els.qrGrid.innerHTML = '';
       app.qrInstances = [];
+      app.barcodeInstances = [];
       els.downloadAllBtn.disabled = true;
+      app.previewQR = null;
+      els.previewCanvas.innerHTML = `<div class="preview-placeholder">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" style="width:48px;height:48px;margin:0 auto 12px;display:block;opacity:0.3">
+          <path d="M3 3h7v7H3V3Zm11 0h7v7h-7V3ZM3 14h7v7H3v-7Z" fill="currentColor"/>
+          <path d="M14 14h2v2h-2v-2Zm4 0h2v2h-2v-2Zm-4 4h2v2h-2v-2Zm4 0h2v2h-2v-2Z" fill="currentColor"/>
+        </svg>
+        أدخل البيانات لعرض المعاينة</div>`;
       showToast('تم مسح الكل', 'success');
     }
 
-    // Logo Upload
-    async function handleLogoUpload(e) {
+    // ===== LOGO =====
+    function handleLogoUpload(e) {
       const file = e.target.files[0];
-      if (!file) {
-        app.logoDataUrl = null;
-        return;
-      }
-
+      if (!file) { app.logoDataUrl = null; return; }
       const reader = new FileReader();
-      reader.onload = e => {
-        app.logoDataUrl = e.target.result;
+      reader.onload = ev => {
+        app.logoDataUrl = ev.target.result;
         showToast('تم تحميل الشعار', 'success');
+        debouncedPreview();
       };
       reader.readAsDataURL(file);
     }
 
-    // Decoder Functions
+    // ===== DECODER =====
     function setupDragDrop() {
-      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        els.dropZone.addEventListener(eventName, preventDefaults, false);
+      ['dragenter','dragover','dragleave','drop'].forEach(e => {
+        els.dropZone.addEventListener(e, ev => { ev.preventDefault(); ev.stopPropagation(); }, false);
       });
-
-      function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-
-      ['dragenter', 'dragover'].forEach(eventName => {
-        els.dropZone.addEventListener(eventName, () => {
-          els.dropZone.classList.add('active');
-        });
+      ['dragenter','dragover'].forEach(e => {
+        els.dropZone.addEventListener(e, () => els.dropZone.classList.add('active'));
       });
-
-      ['dragleave', 'drop'].forEach(eventName => {
-        els.dropZone.addEventListener(eventName, () => {
-          els.dropZone.classList.remove('active');
-        });
+      ['dragleave','drop'].forEach(e => {
+        els.dropZone.addEventListener(e, () => els.dropZone.classList.remove('active'));
       });
-
-      els.dropZone.addEventListener('drop', handleDrop);
-    }
-
-    async function handleDrop(e) {
-      const files = Array.from(e.dataTransfer.files);
-      for (const file of files) {
-        await decodeFile(file);
-      }
+      els.dropZone.addEventListener('drop', async e => {
+        for (const file of Array.from(e.dataTransfer.files)) await decodeFile(file);
+      });
     }
 
     async function handleFileSelect(e) {
-      const files = Array.from(e.target.files);
-      for (const file of files) {
-        await decodeFile(file);
-      }
+      for (const file of Array.from(e.target.files)) await decodeFile(file);
     }
 
     async function decodeFile(file) {
       try {
         const url = URL.createObjectURL(file);
         const result = await decodeImage(url);
-        
-        if (result) {
-          addDecodeResult(result, url);
-        } else {
-          showToast('لم يتم العثور على رمز QR', 'error');
-        }
-      } catch (e) {
-        showToast('خطأ في قراءة الملف', 'error');
-      }
+        if (result) { addDecodeResult(result, url); }
+        else { showToast('لم يتم العثور على رمز QR', 'error'); }
+      } catch(e) { showToast('خطأ في قراءة الملف', 'error'); }
     }
 
-    async function decodeImage(url) {
-      return new Promise((resolve) => {
+    function decodeImage(url) {
+      return new Promise(resolve => {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
@@ -1460,10 +1921,8 @@
           canvas.width = img.width;
           canvas.height = img.height;
           ctx.drawImage(img, 0, 0);
-          
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const code = jsQR(imageData.data, imageData.width, imageData.height);
-          
           resolve(code ? code.data : null);
         };
         img.src = url;
@@ -1473,27 +1932,23 @@
     function addDecodeResult(data, imageUrl) {
       const item = document.createElement('div');
       item.className = 'decode-item';
-      
       const isUrl = /^https?:\/\//i.test(data);
       const title = isUrl ? new URL(data).hostname.replace('www.', '') : 'نص';
-      
+      const encoded = btoa(unescape(encodeURIComponent(data)));
+
       item.innerHTML = `
-        <div class="decode-thumb">
-          <img src="${imageUrl}" alt="QR">
-        </div>
+        <div class="decode-thumb"><img src="${imageUrl}" alt="QR"></div>
         <div class="decode-content">
           <div class="decode-text">
-            ${isUrl ? `<strong>${title}</strong>` : ''}
-            ${data}
+            ${isUrl ? `<strong>${escapeHtml(title)}</strong>` : ''}
+            ${escapeHtml(data)}
           </div>
           <div class="decode-actions">
-            <button class="btn" onclick="copyText('${btoa(data)}')">نسخ</button>
-            <button class="btn" onclick="addToGenerator('${btoa(data)}')">إضافة للمولد</button>
-            ${isUrl ? `<a class="btn" href="${data}" target="_blank">فتح</a>` : ''}
+            <button class="btn" onclick="copyText('${encoded}')">نسخ</button>
+            <button class="btn" onclick="addToGenerator('${encoded}')">إضافة للمولد</button>
+            ${isUrl ? `<a class="btn" href="${escapeHtml(data)}" target="_blank" rel="noopener">فتح</a>` : ''}
           </div>
-        </div>
-      `;
-      
+        </div>`;
       els.decodeResults.insertBefore(item, els.decodeResults.firstChild);
       showToast('تم فك التشفير بنجاح', 'success');
     }
@@ -1501,414 +1956,163 @@
     async function pasteFromClipboard() {
       try {
         const items = await navigator.clipboard.read();
-        
         for (const item of items) {
           for (const type of item.types) {
             if (type.startsWith('image/')) {
               const blob = await item.getType(type);
               const url = URL.createObjectURL(blob);
               const result = await decodeImage(url);
-              
-              if (result) {
-                addDecodeResult(result, url);
-              }
-              return;
+              if (result) { addDecodeResult(result, url); return; }
             }
           }
         }
-        
         const text = await navigator.clipboard.readText();
         if (text) {
-          addToGenerator(btoa(text));
+          if (els.multiInput.value) els.multiInput.value += '\n';
+          els.multiInput.value += text;
+          updateLineNumbers();
+          debouncedPreview();
           showToast('تم لصق النص في المولد', 'success');
         }
-      } catch (e) {
-        showToast('فشل اللصق. تحقق من الأذونات', 'error');
-      }
+      } catch(e) { showToast('فشل اللصق. تحقق من الأذونات', 'error'); }
     }
 
-    // Camera Functions
+    // ===== CAMERA =====
     async function toggleCamera() {
-      if (app.isScanning) {
-        stopCamera();
-      } else {
-        await startCamera();
-      }
+      if (app.isScanning) stopCamera();
+      else await startCamera();
     }
 
     async function startCamera() {
       try {
-        app.cameraStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' }
-        });
-        
+        app.cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
         els.video.srcObject = app.cameraStream;
         els.video.classList.add('active');
         await els.video.play();
-        
         app.isScanning = true;
-        els.cameraBtn.innerHTML = `
-          <svg class="icon" viewBox="0 0 24 24" fill="none">
-            <rect x="6" y="6" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
-          </svg>
-          إيقاف
-        `;
-        
+        els.cameraBtn.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none"><rect x="6" y="6" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/></svg> إيقاف`;
         scanQR();
         showToast('تم تشغيل الكاميرا', 'success');
-      } catch (e) {
-        showToast('فشل تشغيل الكاميرا', 'error');
-      }
+      } catch(e) { showToast('فشل تشغيل الكاميرا', 'error'); }
     }
 
     function stopCamera() {
       if (app.cameraStream) {
-        app.cameraStream.getTracks().forEach(track => track.stop());
+        app.cameraStream.getTracks().forEach(t => t.stop());
         app.cameraStream = null;
       }
-      
       els.video.srcObject = null;
       els.video.classList.remove('active');
       app.isScanning = false;
-      
-      els.cameraBtn.innerHTML = `
-        <svg class="icon" viewBox="0 0 24 24" fill="none">
-          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2v11Z" stroke="currentColor" stroke-width="2"/>
-          <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/>
-        </svg>
-        كاميرا
-      `;
-      
-      showToast('تم إيقاف الكاميرا', 'success');
+      els.cameraBtn.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2v11Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/></svg> كاميرا`;
     }
 
     function scanQR() {
       if (!app.isScanning) return;
-      
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      
       if (els.video.readyState === els.video.HAVE_ENOUGH_DATA) {
         canvas.width = els.video.videoWidth;
         canvas.height = els.video.videoHeight;
         ctx.drawImage(els.video, 0, 0, canvas.width, canvas.height);
-        
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const code = jsQR(imageData.data, imageData.width, imageData.height);
-        
         if (code) {
-          const imageUrl = canvas.toDataURL();
-          addDecodeResult(code.data, imageUrl);
+          addDecodeResult(code.data, canvas.toDataURL());
           stopCamera();
           return;
         }
       }
-      
       requestAnimationFrame(scanQR);
     }
 
-    // Keyboard Shortcuts
+    // ===== KEYBOARD SHORTCUTS =====
     function setupKeyboardShortcuts() {
       document.addEventListener('keydown', e => {
-        // Help modal
-        if (e.key === '?' || (e.shiftKey && e.key === '/')) {
-          e.preventDefault();
-          showModal(els.helpModal);
-        }
-        
-        // Theme toggle
-        if (e.key.toLowerCase() === 'd' && !e.ctrlKey && !e.metaKey) {
-          if (document.activeElement.tagName !== 'INPUT' && 
-              document.activeElement.tagName !== 'TEXTAREA') {
-            toggleTheme();
-          }
-        }
-        
-        // Camera toggle
-        if (e.key.toLowerCase() === 'g' && !e.ctrlKey && !e.metaKey) {
-          if (document.activeElement.tagName !== 'INPUT' && 
-              document.activeElement.tagName !== 'TEXTAREA') {
-            toggleCamera();
-          }
-        }
-        
-        // Generate
-        if (e.ctrlKey && e.key === 'Enter') {
-          e.preventDefault();
-          generateQRCodes();
-        }
-        
-        // Download all
-        if (e.ctrlKey && e.key.toLowerCase() === 's') {
-          e.preventDefault();
-          if (!els.downloadAllBtn.disabled) {
-            downloadAll();
-          }
-        }
-        
-        // Paste
-        if (e.ctrlKey && e.key.toLowerCase() === 'v') {
-          if (document.activeElement !== els.multiInput) {
-            e.preventDefault();
-            pasteFromClipboard();
-          }
-        }
-        
-        // Close modal
-        if (e.key === 'Escape') {
-          hideModal(els.helpModal);
-        }
+        const inInput = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA';
+        if (e.key === '?' || (e.shiftKey && e.key === '/')) { e.preventDefault(); showModal(els.helpModal); }
+        if (e.key.toLowerCase() === 'd' && !e.ctrlKey && !e.metaKey && !inInput) toggleTheme();
+        if (e.key.toLowerCase() === 'g' && !e.ctrlKey && !e.metaKey && !inInput) toggleCamera();
+        if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); generateCodes(); }
+        if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); if (!els.downloadAllBtn.disabled) downloadAll(); }
+        if (e.ctrlKey && e.key.toLowerCase() === 'v' && !inInput) { e.preventDefault(); pasteFromClipboard(); }
+        if (e.key === 'Escape') hideModal(els.helpModal);
       });
     }
 
-    // Utility Functions
+    // ===== UTILITIES =====
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
       toast.className = `toast ${type}`;
-      
       const icons = {
         success: '<path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
         error: '<path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
         warning: '<path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
         info: '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
       };
-      
-      toast.innerHTML = `
-        <svg class="toast-icon" viewBox="0 0 24 24" fill="none">
-          ${icons[type] || icons.info}
-        </svg>
-        ${message}
-      `;
-      
+      toast.innerHTML = `<svg class="toast-icon" viewBox="0 0 24 24" fill="none">${icons[type]||icons.info}</svg>${escapeHtml(message)}`;
       els.toastContainer.appendChild(toast);
-      
       setTimeout(() => {
         toast.style.animation = 'fadeOut 0.3s ease';
         setTimeout(() => toast.remove(), 300);
       }, 3000);
     }
 
-    function showModal(modal) {
-      modal.classList.add('show');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function hideModal(modal) {
-      modal.classList.remove('show');
-      document.body.style.overflow = '';
-    }
+    function showModal(modal) { modal.classList.add('show'); document.body.style.overflow = 'hidden'; }
+    function hideModal(modal) { modal.classList.remove('show'); document.body.style.overflow = ''; }
 
     function slugify(text) {
       return text.toString().toLowerCase()
         .replace(/[^\w\u0600-\u06FF\s-]/g, '')
         .replace(/[\s_-]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+        .replace(/^-+|-+$/g, '') || 'code';
     }
 
-    function checkFeatures() {
-      // Check clipboard API
-      if (!navigator.clipboard?.read) {
-        els.pasteBtn.style.display = 'none';
-      }
-      
-      // Check camera API
-      if (!navigator.mediaDevices?.getUserMedia) {
-        els.cameraBtn.style.display = 'none';
-      }
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
     }
 
-    // Global functions for inline handlers
-    window.copyText = async (encodedData) => {
-      const data = atob(encodedData);
-      try {
-        await navigator.clipboard.writeText(data);
-        showToast('تم النسخ', 'success');
-      } catch {
-        showToast('فشل النسخ', 'error');
-      }
-    };
-
-    window.addToGenerator = (encodedData) => {
-      const data = atob(encodedData);
-      if (els.multiInput.value) {
-        els.multiInput.value += '\n';
-      }
-      els.multiInput.value += data;
-      updateLineNumbers();
-      showToast('تمت الإضافة للمولد', 'success');
-    };
-
-    window.removeQR = removeQR;
-    window.copyQR = copyQR;
-    window.downloadQR = downloadQR;
-
-    // Service Worker for offline support
-    if ('serviceWorker' in navigator) {
-      const swCode = `
-        const CACHE_NAME = 'qr-app-v1';
-        const urlsToCache = [
-          '/',
-          'https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js',
-          'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
-          'https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js',
-          'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js',
-          'https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap'
-        ];
-
-        self.addEventListener('install', event => {
-          event.waitUntil(
-            caches.open(CACHE_NAME)
-              .then(cache => cache.addAll(urlsToCache))
-          );
-        });
-
-        self.addEventListener('fetch', event => {
-          event.respondWith(
-            caches.match(event.request)
-              .then(response => response || fetch(event.request))
-          );
-        });
-
-        self.addEventListener('activate', event => {
-          event.waitUntil(
-            caches.keys().then(cacheNames => {
-              return Promise.all(
-                cacheNames.filter(cacheName => cacheName !== CACHE_NAME)
-                  .map(cacheName => caches.delete(cacheName))
-              );
-            })
-          );
-        });
-      `;
-
-      const blob = new Blob([swCode], { type: 'application/javascript' });
-      const swUrl = URL.createObjectURL(blob);
-      
-      navigator.serviceWorker.register(swUrl).catch(() => {
-        // Fallback if blob URL doesn't work
-        console.log('Service Worker registration failed');
-      });
-    }
-
-    // Web Share API Support
-    window.shareQR = async (id) => {
-      const qr = app.qrInstances.find(q => q.id === id);
-      if (!qr) return;
-
-      if (navigator.share && navigator.canShare) {
-        try {
-          const blob = await qr.instance.getRawData('png');
-          const file = new File([blob], `${slugify(qr.title)}.png`, { type: 'image/png' });
-          
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              title: 'رمز QR',
-              text: qr.data,
-              files: [file]
-            });
-            showToast('تمت المشاركة بنجاح', 'success');
-          } else {
-            await navigator.share({
-              title: 'رمز QR',
-              text: qr.data,
-              url: qr.data
-            });
-          }
-        } catch (err) {
-          if (err.name !== 'AbortError') {
-            showToast('فشلت المشاركة', 'error');
-          }
-        }
-      } else {
-        showToast('المشاركة غير مدعومة', 'warning');
-      }
-    };
-
-    // Advanced features for mobile
-    if ('ontouchstart' in window) {
-      // Swipe to delete on QR cards
-      let touchStartX = 0;
-      let touchStartY = 0;
-      let currentCard = null;
-
-      document.addEventListener('touchstart', e => {
-        const card = e.target.closest('.qr-card');
-        if (card) {
-          touchStartX = e.touches[0].clientX;
-          touchStartY = e.touches[0].clientY;
-          currentCard = card;
-        }
-      });
-
-      document.addEventListener('touchmove', e => {
-        if (!currentCard) return;
-        
-        const touchX = e.touches[0].clientX;
-        const touchY = e.touches[0].clientY;
-        const diffX = touchX - touchStartX;
-        const diffY = Math.abs(touchY - touchStartY);
-        
-        if (Math.abs(diffX) > diffY && Math.abs(diffX) > 50) {
-          e.preventDefault();
-          currentCard.style.transform = `translateX(${diffX}px)`;
-          currentCard.style.opacity = 1 - Math.abs(diffX) / 200;
-        }
-      });
-
-      document.addEventListener('touchend', e => {
-        if (!currentCard) return;
-        
-        const touchX = e.changedTouches[0].clientX;
-        const diffX = touchX - touchStartX;
-        
-        if (Math.abs(diffX) > 100) {
-          const id = currentCard.querySelector('.qr-preview').id;
-          currentCard.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-          currentCard.style.transform = `translateX(${diffX > 0 ? '100%' : '-100%'})`;
-          currentCard.style.opacity = '0';
-          
-          setTimeout(() => {
-            removeQR(id);
-            showToast('تم حذف الرمز', 'success');
-          }, 300);
-        } else {
-          currentCard.style.transform = '';
-          currentCard.style.opacity = '';
-        }
-        
-        currentCard = null;
-      });
-    }
-
-    // Performance optimizations
     function debounce(func, wait) {
       let timeout;
-      return function executedFunction(...args) {
-        const later = () => {
-          clearTimeout(timeout);
-          func(...args);
-        };
+      return function(...args) {
         clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
+        timeout = setTimeout(() => func(...args), wait);
       };
     }
 
-    // Debounce input changes
-    els.multiInput.addEventListener('input', debounce(() => {
-      saveToLocalStorage();
-    }, 500));
+    function checkFeatures() {
+      if (!navigator.clipboard?.read) els.pasteBtn.style.display = 'none';
+      if (!navigator.mediaDevices?.getUserMedia) els.cameraBtn.style.display = 'none';
+    }
 
-    // Save/Load from localStorage
+    // ===== GLOBAL HANDLERS =====
+    window.copyText = async (encoded) => {
+      try {
+        const data = decodeURIComponent(escape(atob(encoded)));
+        await navigator.clipboard.writeText(data);
+        showToast('تم النسخ', 'success');
+      } catch { showToast('فشل النسخ', 'error'); }
+    };
+
+    window.addToGenerator = (encoded) => {
+      const data = decodeURIComponent(escape(atob(encoded)));
+      if (els.multiInput.value) els.multiInput.value += '\n';
+      els.multiInput.value += data;
+      updateLineNumbers();
+      debouncedPreview();
+      showToast('تمت الإضافة للمولد', 'success');
+    };
+
+    // ===== LOCAL STORAGE =====
     function saveToLocalStorage() {
       try {
-        const data = {
+        localStorage.setItem('qr-app-data', JSON.stringify({
           input: els.multiInput.value,
           timestamp: Date.now()
-        };
-        localStorage.setItem('qr-app-data', JSON.stringify(data));
-      } catch (e) {
-        console.error('Failed to save to localStorage:', e);
-      }
+        }));
+      } catch(e) {}
     }
 
     function loadFromLocalStorage() {
@@ -1916,177 +2120,93 @@
         const saved = localStorage.getItem('qr-app-data');
         if (saved) {
           const data = JSON.parse(saved);
-          // Only load if data is less than 24 hours old
           if (Date.now() - data.timestamp < 86400000) {
             els.multiInput.value = data.input || '';
             updateLineNumbers();
           }
         }
-      } catch (e) {
-        console.error('Failed to load from localStorage:', e);
-      }
+      } catch(e) {}
     }
 
-    // Batch processing optimization
-    async function createQRBatch(dataArray, options) {
-      const batchSize = 5;
-      const batches = [];
-      
-      for (let i = 0; i < dataArray.length; i += batchSize) {
-        batches.push(dataArray.slice(i, i + batchSize));
-      }
-      
-      for (const batch of batches) {
-        await Promise.all(
-          batch.map((data, index) => 
-            createQRCard(data.trim(), dataArray.indexOf(data), options)
-          )
-        );
-      }
-    }
+    // ===== PAGE VISIBILITY =====
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && app.isScanning) stopCamera();
+    });
 
-    // Enhanced clipboard support
-    async function enhancedPaste() {
-      try {
-        // Try reading images first
-        const clipboardItems = await navigator.clipboard.read();
-        for (const item of clipboardItems) {
-          if (item.types.includes('image/png') || item.types.includes('image/jpeg')) {
-            const blob = await item.getType(item.types.find(type => type.startsWith('image/')));
-            const url = URL.createObjectURL(blob);
-            const result = await decodeImage(url);
-            if (result) {
-              addDecodeResult(result, url);
-              return;
-            }
-          }
+    // ===== MOBILE TOUCH SWIPE DELETE =====
+    if ('ontouchstart' in window) {
+      let touchStartX = 0, touchStartY = 0, currentCard = null;
+      document.addEventListener('touchstart', e => {
+        const card = e.target.closest('.qr-card');
+        if (card) { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; currentCard = card; }
+      });
+      document.addEventListener('touchmove', e => {
+        if (!currentCard) return;
+        const diffX = e.touches[0].clientX - touchStartX;
+        const diffY = Math.abs(e.touches[0].clientY - touchStartY);
+        if (Math.abs(diffX) > diffY && Math.abs(diffX) > 50) {
+          e.preventDefault();
+          currentCard.style.transform = `translateX(${diffX}px)`;
+          currentCard.style.opacity = 1 - Math.abs(diffX) / 200;
         }
-      } catch (e) {
-        // Fallback to text
-        try {
-          const text = await navigator.clipboard.readText();
-          if (text) {
-            // Check if it's a valid URL or data
-            if (text.startsWith('http') || text.startsWith('data:')) {
-              // Try to decode as image URL
-              const result = await decodeImage(text);
-              if (result) {
-                addDecodeResult(result, text);
-                return;
-              }
-            }
-            // Add as text to generator
-            if (els.multiInput.value) {
-              els.multiInput.value += '\n';
-            }
-            els.multiInput.value += text;
-            updateLineNumbers();
-            showToast('تم لصق النص', 'success');
+      });
+      document.addEventListener('touchend', e => {
+        if (!currentCard) return;
+        const diffX = e.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(diffX) > 100) {
+          const preview = currentCard.querySelector('.qr-preview');
+          if (preview) {
+            currentCard.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            currentCard.style.transform = `translateX(${diffX > 0 ? '100%' : '-100%'})`;
+            currentCard.style.opacity = '0';
+            setTimeout(() => { removeCode(preview.id); }, 300);
           }
-        } catch (err) {
-          showToast('فشل اللصق', 'error');
+        } else {
+          currentCard.style.transform = '';
+          currentCard.style.opacity = '';
         }
-      }
-    }
-
-    // Add share button to QR actions if supported
-    if (navigator.share) {
-      document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-          const styleSheet = document.createElement('style');
-          styleSheet.textContent = `
-            @media (max-width: 640px) {
-              .qr-actions {
-                grid-template-columns: repeat(3, 1fr);
-              }
-            }
-          `;
-          document.head.appendChild(styleSheet);
-        }, 100);
+        currentCard = null;
       });
     }
 
-    // Enhanced error handling
-    window.addEventListener('error', (e) => {
-      console.error('Global error:', e);
-      showToast('حدث خطأ غير متوقع', 'error');
-    });
-
-    window.addEventListener('unhandledrejection', (e) => {
-      console.error('Unhandled promise rejection:', e);
-      showToast('حدث خطأ في المعالجة', 'error');
-    });
-
-    // Page visibility API for camera
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden && app.isScanning) {
-        stopCamera();
-      }
-    });
-
-    // Enhanced mobile detection and adjustments
-    function isMobile() {
-      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    }
-
-    if (isMobile()) {
-      // Add mobile-specific optimizations
+    // ===== MOBILE ADJUSTMENTS =====
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
       document.body.classList.add('mobile');
-      
-      // Adjust QR size for mobile
-      $('#optSize').value = '256';
-      
-      // Add viewport meta adjustments
-      const viewport = document.querySelector('meta[name="viewport"]');
-      viewport.content = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no';
+      if (!app.settings.size) $('#optSize').value = '256';
     }
 
-    // Initialize app when DOM is ready
+    // ===== SERVICE WORKER =====
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        const CACHE_NAME = 'qr-app-v3';
+        const urlsToCache = [
+          '/',
+          'https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js',
+          'https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js',
+          'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
+          'https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js',
+          'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js'
+        ];
+        self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(urlsToCache))));
+        self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+        self.addEventListener('activate', e => e.waitUntil(caches.keys().then(n => Promise.all(n.filter(c => c !== CACHE_NAME).map(c => caches.delete(c))))));
+      `;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+    }
+
+    // ===== ERROR HANDLING =====
+    window.addEventListener('error', () => showToast('حدث خطأ غير متوقع', 'error'));
+    window.addEventListener('unhandledrejection', () => showToast('حدث خطأ في المعالجة', 'error'));
+
+    // ===== START =====
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init);
     } else {
       init();
     }
-
-    // Load saved data
     loadFromLocalStorage();
-
-    // Progressive enhancement - check for features
-    function checkAndEnableFeatures() {
-      const features = {
-        clipboard: 'clipboard' in navigator,
-        share: 'share' in navigator,
-        camera: 'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices,
-        serviceWorker: 'serviceWorker' in navigator,
-        storage: 'localStorage' in window
-      };
-
-      // Disable unsupported features
-      if (!features.clipboard) {
-        els.pasteBtn.style.display = 'none';
-      }
-      
-      if (!features.camera) {
-        els.cameraBtn.style.display = 'none';
-      }
-
-      // Log feature support
-      console.log('Feature support:', features);
-    }
-
-    checkAndEnableFeatures();
-
-    // Export functions for testing
-    if (typeof module !== 'undefined' && module.exports) {
-      module.exports = {
-        generateQRCodes,
-        decodeImage,
-        showToast,
-        slugify
-      };
-    }
-
-    console.log('QR App initialized successfully! 🚀');
+    setTimeout(updatePreview, 500);
   </script>
 </body>
 </html>
