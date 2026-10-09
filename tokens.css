@@ -19,6 +19,14 @@
   --grad-b: #4EE34B;
   --grad-c: #10CCA4;
   --divider: rgba(255, 255, 255, 0.055);
+  --panel-a: #222A38;
+  --panel-b: #1C2431;
+  --tray-flat: #141A25;
+  --fade: rgba(35, 44, 59, .6);
+  --paper: #FFFFFF;
+  --on-grad: #FFFFFF;
+  --ball: #FFFFFF;
+  color-scheme: dark;
 
   /* وصفات التظليل (حرفيًا) */
   --raise:      inset 1px 1px 0 rgba(255,255,255,.09), inset -2px -3px 6px rgba(0,0,0,.38), 0 8px 18px rgba(0,0,0,.42);
@@ -43,6 +51,47 @@
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 
+
+/* ---------- Clay Light: النسخة الفاتحة بنفس الأسلوب الطيني ---------- */
+html[data-theme="light"] {
+  --bg-deep: #DDE3EC;
+  --bg: #E9EDF4;
+  --surface: #F4F6FA;
+  --surface-hover: #FFFFFF;
+  --text: #1A212E;
+  --text-2: #5B6677;
+  --divider: rgba(26, 33, 46, 0.08);
+  --panel-a: #F7F9FC;
+  --panel-b: #EDF0F6;
+  --tray-flat: #E3E8F0;
+  --fade: rgba(244, 246, 250, .7);
+  --raise:      inset 1px 1px 0 rgba(255,255,255,.95), inset -2px -3px 6px rgba(26,33,46,.10), 0 8px 18px rgba(26,33,46,.14);
+  --raise-sm:   inset 1px 1px 0 rgba(255,255,255,.9), inset -1px -2px 4px rgba(26,33,46,.09), 0 4px 10px rgba(26,33,46,.12);
+  --press:      inset 2px 3px 8px rgba(26,33,46,.16), inset -1px -1px 0 rgba(255,255,255,.8);
+  --grad-raise: inset 1px 2px 0 rgba(255,255,255,.45), inset -3px -5px 10px rgba(0,60,40,.28), 0 10px 22px rgba(26,33,46,.18);
+  --shadow-lg:  0 24px 60px rgba(26,33,46,.18), 0 4px 12px rgba(26,33,46,.10);
+  color-scheme: light;
+}
+html[data-theme="light"] .clay-input::placeholder,
+html[data-theme="light"] .clay-textarea::placeholder { opacity: .85; }
+html[data-theme="light"] .clay-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235B6677' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+html[data-theme="light"] .clay-switch__track::after { box-shadow: 0 3px 8px rgba(26,33,46,.25), inset -1px -2px 3px rgba(0,0,0,.08); }
+html[data-theme="light"] .clay-toast { background: var(--surface-hover); }
+html, body { transition: background-color .35s var(--ease), color .35s var(--ease); }
+
+/* الروابط ترث لون النص دائمًا (لا أزرق ولا تسطير افتراضيين) */
+.clay-body a { color: inherit; text-decoration: none; }
+.clay-body a:hover { text-decoration: none; }
+
+/* مفتاح الثيم (ليل/نهار) */
+.theme-toggle { position: relative; }
+.theme-toggle svg { width: 18px; height: 18px; transition: transform .45s var(--ease-bounce), opacity .25s; }
+.theme-toggle .sun { position: absolute; opacity: 0; transform: rotate(-90deg) scale(.6); }
+html[data-theme="light"] .theme-toggle .sun { opacity: 1; transform: none; }
+html[data-theme="light"] .theme-toggle .moon { opacity: 0; transform: rotate(90deg) scale(.6); }
+
 /* ---------- الأساس ---------- */
 .clay-body {
   margin: 0;
@@ -57,7 +106,7 @@
 
 /* ---------- لوحة ---------- */
 .clay-panel {
-  background: linear-gradient(160deg, #222A38 0%, #1C2431 100%);
+  background: linear-gradient(160deg, var(--panel-a) 0%, var(--panel-b) 100%);
   border-radius: var(--r-panel);
   box-shadow: var(--raise), var(--shadow-lg);
   padding: clamp(18px, 2.4vw, 28px);
@@ -113,7 +162,7 @@
   box-shadow: var(--press);
   padding: 14px 16px;
 }
-.clay-tray--flat { background: #141A25; }
+.clay-tray--flat { background: var(--tray-flat); }
 
 /* حقول الإدخال داخل صينية غائرة */
 .clay-input,
