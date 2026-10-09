@@ -1,0 +1,27 @@
+# يحافظ على مشروع Supabase المجاني نشطًا (الخطة المجانية توقف المشاريع
+# بعد أسبوع بلا طلبات) حتى تبقى روابط الملفات التي تحوّلها الأداة إلى QR تعمل دائمًا.
+name: Keep cloud storage alive
+
+on:
+  schedule:
+    - cron: "17 3 */3 * *"   # كل ثلاثة أيام
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ping Supabase REST and Storage
+        run: |
+          set -euo pipefail
+          URL=$(grep -oE "url: *'[^']+'" config.js | head -1 | sed -E "s/url: *'([^']+)'/\1/")
+          KEY=$(grep -oE "key: *'[^']+'" config.js | head -1 | sed -E "s/key: *'([^']+)'/\1/")
+          BUCKET=$(grep -oE "bucket: *'[^']+'" config.js | head -1 | sed -E "s/bucket: *'([^']+)'/\1/")
+          echo "Pinging $URL"
+          curl -fsS -o /dev/null -w "rest: %{http_code}\n" "$URL/rest/v1/" -H "apikey: $KEY"
+          # طلب على خدمة التخزين نفسها (404 متوقّع للملف الوهمي، المهم تسجيل النشاط)
+          curl -sS -o /dev/null -w "storage: %{http_code}\n" "$URL/storage/v1/object/public/$BUCKET/f/keepalive"
