@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>مُنشئ رموز QR — Clay</title>
-  <meta name="description" content="أداة مجانية لإنشاء رموز QR بأنواعها (روابط، ملفات دائمة، Wi-Fi، جهات اتصال، واتساب، مواقع، أحداث) والباركود، مع قارئ رموز مدمج." />
+  <title>محوّل الروابط إلى QR — الخفيف</title>
+  <meta name="description" content="الإصدار الخفيف: الصق روابطك، سطرًا لكل رابط، واحصل فورًا على رموز QR بصيغ SVG و PNG أو ملف ZIP واحد." />
   <meta name="theme-color" content="#10141D" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,1459 +14,188 @@
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
   <link rel="manifest" href="manifest.json" />
-  <meta name="msapplication-TileColor" content="#10141D" />
-  <meta name="msapplication-TileImage" content="ms-icon-144x144.png" />
   <link rel="stylesheet" href="tokens.css" />
-
   <style>
-    *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html { scroll-behavior: smooth; }
-    body { padding: 0; }
-    .page { max-width: 1320px; margin: 0 auto; padding: clamp(14px, 3vw, 28px) clamp(14px, 3vw, 28px) 80px; }
+    *, *::before, *::after { box-sizing: border-box; }
+    .page { max-width: 760px; margin: 0 auto; padding: clamp(16px, 4vw, 36px) clamp(14px, 3vw, 24px) 110px; }
 
-    /* ---------- الترويسة ---------- */
-    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
-    .brand { display: flex; align-items: center; gap: 14px; }
-    .brand-logo { position: relative; width: 58px; height: 58px; border-radius: 32%; background: linear-gradient(160deg, var(--bg) 0%, #121823 100%); box-shadow: var(--raise), var(--shadow-lg); display: grid; place-items: center; overflow: hidden; isolation: isolate; }
-    .brand-logo .wave { position: absolute; inset: 12% 10% 18% 14%; z-index: -1; }
-    .brand-logo svg { width: 26px; height: 26px; color: #fff; filter: drop-shadow(0 1px 1px rgba(0,40,20,.35)); }
-    .brand-text .clay-kicker { margin-bottom: 2px; }
-    .brand-text .sub { font-size: 12px; margin-top: 3px; }
-    .top-actions { display: flex; gap: 10px; align-items: center; }
+    .hero { position: relative; text-align: center; margin-bottom: 26px; }
+    body { overflow-x: hidden; }
+    .meta a, .upsell, .upsell:hover, .upsell .tx b, .upsell .tx span { text-decoration: none; color: inherit; }
+    .hero-glow { position: absolute; inset: -40% 0 auto 0; height: 260px; background: radial-gradient(55% 70% at 50% 45%, rgba(78,227,75,.16), transparent 70%), radial-gradient(45% 70% at 30% 60%, rgba(16,204,164,.14), transparent 70%); filter: blur(22px); pointer-events: none; }
+    .hero-logo { position: relative; width: 84px; height: 84px; margin: 0 auto 16px; border-radius: 32%; background: linear-gradient(160deg, var(--bg) 0%, #121823 100%); box-shadow: var(--raise), var(--shadow-lg); display: grid; place-items: center; overflow: hidden; isolation: isolate; }
+    .hero-logo .wave { position: absolute; inset: 12% 10% 18% 14%; z-index: -1; }
+    .hero-logo svg { width: 38px; height: 38px; color: #fff; filter: drop-shadow(0 2px 2px rgba(0,0,0,.45)); }
+    .hero h1 { position: relative; margin: 6px 0 4px; font-size: clamp(24px, 4vw, 32px); font-weight: 800; letter-spacing: -.01em; }
+    .hero p { position: relative; margin: 0; }
+    .hero .meta { position: relative; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
 
-    /* ---------- الشبكة ---------- */
-    .layout { display: grid; gap: 22px; grid-template-columns: minmax(0, 1.25fr) minmax(320px, .85fr); align-items: start; }
-    @media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } }
-    .side { display: grid; gap: 22px; position: sticky; top: 18px; }
-    @media (max-width: 1024px) { .side { position: static; } }
-
-    .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
-    .section-title { display: flex; align-items: center; gap: 12px; }
-    .section-title .clay-h2 { line-height: 1.2; }
-
-    /* ---------- تبويبات الوضع ---------- */
-    .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px; margin-bottom: 16px; }
-    .seg .clay-tile { box-shadow: none; background: transparent; color: var(--text-2); min-height: 44px; }
-    .seg .clay-tile:hover { background: var(--surface); transform: none; }
-    .seg .clay-tile.active { background: var(--grad); color: #fff; box-shadow: var(--grad-raise); text-shadow: 0 1px 1px rgba(0,40,20,.35); }
-
-    /* ---------- أنواع QR ---------- */
-    .types-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0 10px; }
-    .types { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); margin-bottom: 14px; }
-    .type-tile { flex-direction: column; gap: 8px; padding: 14px 8px; min-height: 92px; font-size: 12.5px; }
-    .type-tile .clay-ic { pointer-events: none; }
-    .type-tile.active { background: var(--bg); box-shadow: var(--press); }
-    .type-tile.active .clay-ic--dark { background: var(--grad); color: #fff; box-shadow: var(--grad-raise); }
-    .types-more { display: none; }
-    .types-more.show { display: grid; }
-    .hint { font-size: 12.5px; line-height: 1.7; }
-
-    /* ---------- نموذج البناء ---------- */
-    .builder { display: none; margin-bottom: 16px; padding: 16px; }
-    .builder.show { display: block; }
-    .builder-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
-    .fields { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-bottom: 14px; }
-    .fields .full { grid-column: 1 / -1; }
-    .field label { display: block; margin-bottom: 7px; font-size: 12px; color: var(--text-2); font-weight: 600; }
-    .field label .req { color: var(--danger); }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    .row.between { justify-content: space-between; }
-    .switch-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-
-    /* ---------- رفع الملفات ---------- */
-    .drop { position: relative; text-align: center; padding: 26px 16px; border-radius: var(--r-tile); background: var(--bg-deep); box-shadow: var(--press); border: 2px dashed rgba(255,255,255,.08); transition: background .25s var(--ease), transform .25s var(--ease-bounce); cursor: pointer; }
-    .drop.over { background: #0D1118; transform: scale(1.01); border-color: rgba(78,227,75,.35); }
-    .drop .clay-ic { margin: 0 auto 12px; }
-    .drop .t { font-size: 14px; }
-    .drop .s { font-size: 12px; margin-top: 4px; }
-    .progress { height: 14px; border-radius: 999px; background: var(--bg-deep); box-shadow: var(--press); overflow: hidden; margin-top: 12px; }
-    .progress > i { display: block; height: 100%; width: 0; background: var(--grad); border-radius: 999px; box-shadow: var(--grad-raise); transition: width .2s var(--ease); }
-    .upload-item { display: grid; gap: 10px; padding: 14px; margin-top: 12px; }
-    .upload-item .name { display: flex; align-items: center; gap: 10px; min-width: 0; }
-    .upload-item .name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; }
-    .upload-item .meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    .upload-item .link { display: flex; gap: 8px; align-items: center; min-width: 0; }
-    .upload-item .link .clay-pill { flex: 1; }
-    .history { margin-top: 14px; }
-    .history summary { cursor: pointer; font-size: 13px; color: var(--text-2); list-style: none; display: flex; align-items: center; gap: 8px; }
-    .history summary::-webkit-details-marker { display: none; }
-    .history-list { display: grid; gap: 8px; margin-top: 10px; }
-    .history-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding: 8px 10px; font-size: 12px; }
-    .history-row .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-    /* ---------- المحرر ---------- */
     .editor { position: relative; }
-    .editor .ln { position: absolute; left: 14px; top: 13px; width: 26px; color: var(--text-2); font-family: var(--mono); font-size: 12px; line-height: 1.7; text-align: right; user-select: none; pointer-events: none; opacity: .75; white-space: pre; }
-    .editor textarea { min-height: 132px; max-height: 420px; padding: 12px 14px 12px 52px; direction: ltr; text-align: left; font-family: var(--mono); font-size: 13.5px; font-weight: 500; }
+    .editor .ln { position: absolute; left: 14px; top: 14px; width: 26px; color: var(--text-2); font-family: var(--mono); font-size: 12px; line-height: 1.7; text-align: right; user-select: none; pointer-events: none; opacity: .75; white-space: pre; }
+    .editor textarea { min-height: 150px; padding: 13px 14px 13px 52px; direction: ltr; text-align: left; font-family: var(--mono); font-size: 14px; font-weight: 500; }
 
-    /* ---------- خيارات التصميم ---------- */
-    details.opts { margin-top: 16px; }
-    details.opts > summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    details.opts > summary::-webkit-details-marker { display: none; }
-    details.opts > summary .chev { transition: transform .3s var(--ease-bounce); }
-    details.opts[open] > summary .chev { transform: rotate(180deg); }
-    .opts-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); margin-top: 14px; }
-    .file-input { position: relative; }
-    .file-input input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+    .bar .spacer { flex: 1; }
 
-    /* ---------- الباركود ---------- */
-    .bc-group { margin-bottom: 10px; }
-    .bc-grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); margin-top: 8px; }
-    .bc-tile { flex-direction: column; gap: 2px; padding: 10px 6px; min-height: 58px; }
-    .bc-tile b { font-size: 13px; }
-    .bc-tile small { font-size: 10.5px; color: var(--text-2); }
-    .bc-tile.active { background: var(--grad); color: #fff; box-shadow: var(--grad-raise); }
-    .bc-tile.active small { color: rgba(255,255,255,.85); }
-
-    /* ---------- الأزرار الرئيسية ---------- */
-    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
-
-    /* ---------- المعاينة ---------- */
-    .paper { display: grid; place-items: center; min-height: 220px; padding: 14px; border-radius: 18px; background: #fff; box-shadow: var(--press); }
-    .paper canvas, .paper svg, .paper img { max-width: 100%; height: auto; display: block; }
-    .paper .empty { color: #8E99AD; font-size: 13px; text-align: center; font-weight: 500; }
-    .paper .empty svg { width: 46px; height: 46px; opacity: .25; display: block; margin: 0 auto 8px; }
-    .paper .err { color: var(--danger); font-size: 13px; text-align: center; }
-    .preview-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
-    .preview-data { margin-top: 12px; }
-
-    /* ---------- بطاقات النتائج ---------- */
-    .results { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); margin-top: 18px; }
+    .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); margin-top: 22px; }
     .card { padding: 14px; border-radius: 22px; background: var(--surface); box-shadow: var(--raise); animation: pop .4s var(--ease-bounce) both; }
     @keyframes pop { from { transform: scale(.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-    .card-head .title { flex: 1; min-width: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .card .paper { min-height: 170px; padding: 10px; }
-    .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .card h3 { margin: 0 0 10px; font-size: 13.5px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: ltr; text-align: center; }
+    .paper { display: grid; place-items: center; padding: 10px; border-radius: 16px; background: #fff; box-shadow: var(--press); }
+    .paper svg { width: 100%; height: auto; display: block; }
+    .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .acts .clay-tile { min-height: 36px; font-size: 12px; padding: 0 10px; border-radius: 14px; box-shadow: var(--raise-sm); }
 
-    /* ---------- القارئ ---------- */
-    .dec-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
-    video { width: 100%; border-radius: 18px; background: #000; margin-top: 12px; display: none; box-shadow: var(--press); }
-    video.active { display: block; }
-    .dec-list { display: grid; gap: 10px; margin-top: 14px; }
-    .dec-item { display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: center; padding: 12px; }
-    .dec-thumb { width: 64px; height: 64px; border-radius: 14px; background: #fff; overflow: hidden; display: grid; place-items: center; box-shadow: var(--raise-sm); }
-    .dec-thumb img { width: 100%; height: 100%; object-fit: contain; }
-    .dec-text { font-size: 13px; word-break: break-word; line-height: 1.6; margin-bottom: 8px; }
-    .dec-text b { display: block; margin-bottom: 2px; }
-
-    /* ---------- بطاقة المطور ---------- */
-    .dev-wrap { margin-top: 26px; display: grid; grid-template-columns: minmax(0, 1fr); }
-    .dev { position: relative; border-radius: 28px; overflow: hidden; background: linear-gradient(160deg, var(--surface) 0%, var(--bg) 100%); box-shadow: inset 1px 1px 0 rgba(255,255,255,.06), 0 16px 40px rgba(0,0,0,.5); display: grid; grid-template-columns: minmax(260px, 380px) minmax(0, 1fr); }
-    .dev-photo { position: relative; min-height: 300px; overflow: hidden; background: var(--bg-deep); }
-    .dev-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; }
-    .dev-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(270deg, var(--surface) 0%, rgba(35,44,59,.55) 35%, transparent 70%); pointer-events: none; }
-    .dev-photo .ph { position: absolute; inset: 0; display: grid; place-items: center; }
-    .dev-photo .ph .wave { width: 58%; aspect-ratio: 1; opacity: .9; }
-    .dev-photo .ph b { position: absolute; font-size: 64px; font-weight: 800; color: #fff; text-shadow: 0 2px 2px rgba(0,40,20,.35); }
-    .dev-badge { position: absolute; top: 14px; right: 14px; z-index: 2; display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px 7px 11px; border-radius: 999px; background: var(--surface); color: var(--text); font-size: 11.5px; font-weight: 700; box-shadow: var(--raise-sm); }
-    .dev-badge .pulse { width: 9px; height: 9px; border-radius: 50%; background: var(--grad-b); box-shadow: inset 0 -1px 2px rgba(0,0,0,.3); animation: pulse 1.8s ease-in-out infinite; }
-    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(78,227,75,.55); } 50% { box-shadow: 0 0 0 6px rgba(78,227,75,0); } }
-    .dev-body { position: relative; z-index: 1; padding: 24px 22px 22px; text-align: right; }
-    .dev-name { margin-top: 4px; font-size: clamp(26px, 3vw, 32px); font-weight: 800; letter-spacing: -.005em; line-height: 1.2; }
-    .dev-role { margin-top: 6px; font-size: 13px; color: var(--text-2); font-weight: 500; }
-    .dev-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
-    .dev-tags span { padding: 6px 12px; border-radius: 999px; background: var(--surface-hover); box-shadow: var(--raise-sm); font-size: 11.5px; font-weight: 600; }
-    .dev-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 18px; max-width: 420px; }
-    .dev-act { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 13px 4px 11px; border-radius: 20px; border: 0; background: var(--surface-hover); box-shadow: var(--raise-sm); color: var(--text); font: inherit; font-size: 11.5px; font-weight: 600; text-decoration: none; cursor: pointer; transition: transform .18s var(--ease-bounce), background .18s, box-shadow .18s; }
-    .dev-act:hover { transform: translateY(-2px); }
-    .dev-act:active { transform: none; box-shadow: var(--press); }
-    .dev-act .ic { width: 42px; height: 42px; border-radius: 15px; display: grid; place-items: center; color: #fff; background: var(--grad); box-shadow: inset 1px 2px 0 rgba(255,255,255,.35), inset -2px -3px 6px rgba(0,60,40,.35), 0 4px 10px rgba(0,0,0,.35); }
-    .dev-act .ic svg { width: 18px; height: 18px; filter: drop-shadow(0 1px 1px rgba(0,40,20,.35)); }
-    .dev-act.wa .ic { background: linear-gradient(135deg, #5EEA7A, #1FB55C); }
-    .dev-rows { margin-top: 14px; border-radius: 18px; background: var(--bg-deep); box-shadow: var(--press); overflow: hidden; max-width: 520px; }
-    .dev-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 14px; color: var(--text); text-decoration: none; font-size: 13px; }
-    .dev-row + .dev-row { border-top: 1px solid var(--divider); }
-    a.dev-row:hover { background: rgba(255,255,255,.04); }
-    .dev-row .k { color: var(--text-2); font-weight: 600; font-size: 12.5px; }
-    .dev-row .v { font-weight: 600; }
-    .dev-row .v em { font-style: normal; font-size: 11px; font-weight: 800; color: #10141D; background: linear-gradient(90deg, #CEF04C 0%, #4EE34B 50%, #10CCA4 100%); padding: 3px 8px; border-radius: 999px; margin-inline-start: 4px; }
-    .dev-note { display: flex; gap: 8px; align-items: flex-start; margin: 14px 2px 0; font-size: 11.5px; line-height: 1.7; color: var(--text-2); font-weight: 500; max-width: 520px; }
-    .dev-note svg { width: 14px; height: 14px; color: var(--grad-b); margin-top: 3px; flex: 0 0 auto; }
-    @media (max-width: 760px) {
-      .dev { grid-template-columns: 1fr; }
-      .dev-photo { min-height: 0; aspect-ratio: 1 / .7; }
-      .dev-photo::after { background: linear-gradient(180deg, transparent, rgba(35,44,59,.6) 50%, var(--surface) 90%); inset: auto 0 -2px 0; height: 52%; }
-      .dev-body { margin-top: -56px; text-align: center; padding: 0 18px 18px; }
-      .dev-tags, .dev-actions { justify-content: center; margin-inline: auto; }
-      .dev-rows, .dev-note { margin-inline: auto; text-align: right; }
-    }
-    @media (prefers-reduced-motion: reduce) { .dev-badge .pulse { animation: none; } }
-
-    /* ---------- تنبيهات ونوافذ ---------- */
+    .upsell { margin-top: 28px; display: flex; align-items: center; gap: 14px; padding: 16px 18px; }
+    .upsell .tx { flex: 1; min-width: 0; }
+    .upsell .tx b { display: block; font-size: 14.5px; }
+    .upsell .tx span { font-size: 12.5px; }
+    .foot { margin-top: 26px; text-align: center; font-size: 12px; }
+    .foot a { color: var(--text); text-decoration: none; }
     .toasts { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 9999; display: grid; gap: 8px; pointer-events: none; }
     .toasts .clay-toast { pointer-events: auto; animation: up .35s var(--ease-bounce); }
     @keyframes up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
-    .modal { position: fixed; inset: 0; display: none; place-items: center; background: rgba(8, 11, 17, .72); z-index: 9998; padding: 16px; }
-    .modal.show { display: grid; }
-    .modal .clay-panel { width: min(620px, 100%); max-height: 86vh; overflow: auto; }
-    .kbd-list { display: grid; gap: 8px; }
-    .kbd-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; }
-    .kbd-row .k { display: flex; gap: 4px; }
-    .kbd-row .d { flex: 1; font-size: 13.5px; color: var(--text-2); }
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-    .hide-sm { display: inline; }
-    @media (max-width: 640px) {
-      .hide-sm { display: none; }
-      .preview-actions, .dec-actions { grid-template-columns: 1fr 1fr 1fr; }
-      .card-actions { grid-template-columns: 1fr; }
-      .results { grid-template-columns: 1fr; }
-    }
-    @media print {
-      body { background: #fff !important; }
-      .topbar, .side, .actions, details.opts, .seg, .types, .builder, .editor, .card-actions { display: none !important; }
-      .clay-panel { box-shadow: none; }
-    }
+    @media (max-width: 640px) { .upsell { flex-direction: column; text-align: center; } .acts { grid-template-columns: 1fr 1fr; } }
   </style>
 </head>
 <body class="clay-body">
-  <div class="page">
-
-    <!-- ===== الترويسة ===== -->
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-logo clay-glow" aria-hidden="true">
-          <span class="wave clay-wave"></span>
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h7v7H3V3Zm2 2v3h3V5H5Zm9-2h7v7h-7V3Zm2 2v3h3V5h-3ZM3 14h7v7H3v-7Zm2 2v3h3v-3H5Zm9-2h2v2h-2v-2Zm4 0h3v2h-3v-2Zm-4 4h2v3h-2v-3Zm4 0h3v3h-3v-3Z"/></svg>
-        </div>
-        <div class="brand-text">
-          <span class="clay-kicker">Clay QR Studio</span>
-          <h1 class="clay-h1">مُنشئ رموز QR والباركود</h1>
-          <div class="sub clay-muted">تطوير: يوسف حُميد · الإصدار 4.0 · ملفات دائمة في السحابة</div>
-        </div>
+  <main class="page">
+    <header class="hero">
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="hero-logo clay-glow" aria-hidden="true">
+        <span class="wave clay-wave"></span>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h7v7H3V3Zm2 2v3h3V5H5Zm9-2h7v7h-7V3Zm2 2v3h3V5h-3ZM3 14h7v7H3v-7Zm2 2v3h3v-3H5Zm9-2h2v2h-2v-2Zm4 0h3v2h-3v-2Zm-4 4h2v3h-2v-3Zm4 0h3v3h-3v-3Z"/></svg>
       </div>
-      <div class="top-actions">
-        <a class="clay-tile clay-tile--sm" href="#developer" id="devLink" title="معلومات المطور">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-          <span class="hide-sm">المطوّر</span>
-        </a>
-        <button class="clay-tile clay-tile--sm" id="helpBtn" title="المساعدة (?)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg>
-          <span class="hide-sm">مساعدة</span>
-        </button>
+      <span class="clay-kicker">الإصدار الخفيف</span>
+      <h1>محوّل الروابط إلى رموز QR</h1>
+      <p class="clay-muted">الصق روابطك، سطرًا لكل رابط، وستظهر الرموز فورًا.</p>
+      <div class="meta">
+        <span class="clay-badge"><span class="clay-dot"></span> يعمل بالكامل في متصفحك</span>
+        <a class="clay-badge" href="studio.html#developer" data-ver-link>تطوير: يوسف حُميد</a>
       </div>
     </header>
 
-    <div class="layout">
-      <!-- ===== المولّد ===== -->
-      <section class="clay-panel" id="generatorPanel">
-        <div class="section-head">
-          <div class="section-title">
-            <span class="clay-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM18 14h3M14 18v3"/></svg></span>
-            <div>
-              <span class="clay-kicker">Generator</span>
-              <h2 class="clay-h2">مُنشئ الرموز</h2>
-            </div>
-          </div>
-          <button class="clay-tile clay-tile--grad" id="generateBtn" title="توليد (Ctrl+Enter)">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            توليد
-          </button>
-        </div>
-
-        <!-- وضع الرمز -->
-        <div class="clay-tray seg" role="tablist" aria-label="نوع الرمز">
-          <button class="clay-tile active" role="tab" data-mode="qr" aria-selected="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 0h2v2h-2zm4 0h3v2h-3zm-4 4h2v3h-2zm4 0h3v3h-3z"/></svg>
-            رمز QR
-          </button>
-          <button class="clay-tile" role="tab" data-mode="barcode" aria-selected="false">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2 4h2v16H2zm4 0h1v16H6zm3 0h2v16H9zm4 0h1v16h-1zm3 0h2v16h-2zm4 0h2v16h-2z"/></svg>
-            باركود
-          </button>
-        </div>
-
-        <!-- ===== أنواع QR (الخيارات المتقدمة) ===== -->
-        <div id="qrTypes">
-          <div class="types-head">
-            <span class="clay-kicker">ماذا تريد أن يفتح الرمز؟</span>
-            <button class="clay-tile clay-tile--sm" id="moreTypesBtn" aria-expanded="false" aria-controls="typesMore">
-              <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-              خيارات متقدمة
-            </button>
-          </div>
-          <div class="types" id="typesMain">
-            <button class="clay-tile type-tile active" data-type="text">
-              <span class="clay-ic clay-ic--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7L12 19"/></svg></span>
-              نص / رابط
-            </button>
-            <button class="clay-tile type-tile" data-type="file">
-              <span class="clay-ic clay-ic--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5M12 18v-6M9 15l3-3 3 3"/></svg></span>
-              ملف → رابط دائم
-            </button>
-          </div>
-          <div class="types types-more" id="typesMore">
-            <button class="clay-tile type-tile" data-type="wifi">
-              <span class="clay-ic clay-ic--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12.5a11 11 0 0 1 14 0M8.5 16a6 6 0 0 1 7 0M1.5 9a16 16 0 0 1 21 0"/><circle cx="12" cy="19.5" r="1" fill="currentColor"/></svg></span>
-              شبكة Wi-Fi
-            </button>
-            <button class="clay-tile type-tile" data-type="vcard">
-              <span class="clay-ic clay-ic--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="11" r="2.2"/><path d="M5.5 17a3.5 3.5 0 0 1 7 0M14.5 9.5H18M14.5 13H18"/></svg></span>
-              جهة اتصال
-            </button>
-            <button class="clay-tile type-tile" data-type="email">
-              <span class="clay-ic clay-ic--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m3 8 9 6 9-6"/></svg></span>
-              بريد إلكتروني
-            </button>
-            <button class="clay-tile type-tile" data-type="sms">
-              <span class="clay-ic clay-ic--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg></span>
-              رسالة SMS
-            </button>
-            <button class="clay-tile type-tile" data-type="tel">
-              <span class="clay-ic clay-ic--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.9 2.1z"/></svg></span>
-              اتصال هاتفي
-            </button>
-            <button class="clay-tile type-tile" data-type="whatsapp">
-              <span class="clay-ic clay-ic--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l1.6-4.7A8.5 8.5 0 1 1 7.9 19.5z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1.2-1.4-1.9-1-1 .8a4 4 0 0 1-2.2-2.2l.8-1-1-1.9z"/></svg></span>
-              واتساب
-            </button>
-            <button class="clay-tile type-tile" data-type="geo">
-              <span class="clay-ic clay-ic--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
-              موقع جغرافي
-            </button>
-            <button class="clay-tile type-tile" data-type="event">
-              <span class="clay-ic clay-ic--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M8.5 15l2.3 2.3L16 12.5"/></svg></span>
-              حدث تقويم
-            </button>
-            <button class="clay-tile type-tile" data-type="social">
-              <span class="clay-ic clay-ic--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span>
-              حساب اجتماعي
-            </button>
-            <button class="clay-tile type-tile" data-type="app">
-              <span class="clay-ic clay-ic--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/></svg></span>
-              تطبيق (متجر)
-            </button>
-          </div>
-          <p class="hint clay-muted" id="typeHint">اكتب الروابط أو النصوص في المحرر أدناه، سطرًا لكل رمز، وسيظهر أول سطر في المعاينة فورًا.</p>
-        </div>
-
-        <!-- ===== نموذج النوع ===== -->
-        <div class="clay-tray builder" id="builder">
-          <div class="builder-head">
-            <div class="section-title">
-              <span class="clay-ic clay-ic--sm" id="builderIcon"></span>
-              <h3 class="clay-h2" id="builderTitle">نموذج</h3>
-            </div>
-            <button class="clay-tile clay-tile--sm clay-tile--icon" id="closeBuilder" title="إغلاق">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-            </button>
-          </div>
-          <div class="fields" id="builderFields"></div>
-          <div class="row">
-            <button class="clay-tile clay-tile--grad" id="addToList">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-              إضافة للقائمة
-            </button>
-            <button class="clay-tile" id="previewBuilder">معاينة فقط</button>
-          </div>
-        </div>
-
-        <!-- ===== رفع ملف ===== -->
-        <div class="clay-tray builder" id="fileBuilder">
-          <div class="builder-head">
-            <div class="section-title">
-              <span class="clay-ic clay-ic--sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5M12 18v-6M9 15l3-3 3 3"/></svg></span>
-              <div>
-                <h3 class="clay-h2">ملف → رابط دائم → QR</h3>
-                <div class="clay-muted" style="font-size:12px">يُرفع الملف إلى تخزين سحابي مجاني ويُحفظ باسم مشتق من بصمة محتواه، فلا يتغير رابطه أبدًا.</div>
-              </div>
-            </div>
-            <button class="clay-tile clay-tile--sm clay-tile--icon" id="closeFileBuilder" title="إغلاق">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-            </button>
-          </div>
-
-          <div class="drop" id="fileDrop" tabindex="0" role="button" aria-label="اختر ملفًا أو أفلته هنا">
-            <span class="clay-ic clay-ic--lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M20 16v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/></svg></span>
-            <div class="t">اسحب الملفات هنا أو انقر للاختيار</div>
-            <div class="s clay-muted" id="fileLimitText">PDF، صور، مستندات، صوت، فيديو، ملفات مضغوطة… حتى 25 MB للملف</div>
-            <input type="file" id="fileInputUpload" multiple class="sr-only" />
-          </div>
-
-          <div class="row between" style="margin-top:12px">
-            <label class="switch-row">
-              <span class="clay-switch"><input type="checkbox" id="fileForceDownload" /><span class="clay-switch__track"></span></span>
-              <span>رابط يُنزّل الملف مباشرة بدل فتحه في المتصفح</span>
-            </label>
-            <span class="clay-badge" id="storageStatus"><span class="clay-dot clay-dot--muted"></span> جارٍ فحص التخزين…</span>
-          </div>
-
-          <div id="uploadList"></div>
-
-          <details class="history" id="historyBox">
-            <summary>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-              سجل ملفاتك المرفوعة على هذا الجهاز <span class="clay-badge" id="historyCount">0</span>
-            </summary>
-            <div class="history-list" id="historyList"></div>
-            <div class="row" style="margin-top:10px">
-              <button class="clay-tile clay-tile--sm" id="exportHistory">تصدير السجل (JSON)</button>
-              <button class="clay-tile clay-tile--sm clay-tile--danger" id="clearHistory">مسح السجل من هذا الجهاز</button>
-            </div>
-          </details>
-        </div>
-
-        <!-- ===== اختيار صيغة الباركود ===== -->
-        <div id="barcodeTypes" style="display:none">
-          <div class="bc-group">
-            <span class="clay-kicker">تجارية · المنتجات</span>
-            <div class="bc-grid">
-              <button class="clay-tile bc-tile active" data-format="CODE128"><b>Code 128</b><small>الأكثر استخدامًا</small></button>
-              <button class="clay-tile bc-tile" data-format="EAN13"><b>EAN-13</b><small>المنتجات العالمية</small></button>
-              <button class="clay-tile bc-tile" data-format="EAN8"><b>EAN-8</b><small>منتجات صغيرة</small></button>
-              <button class="clay-tile bc-tile" data-format="UPC"><b>UPC-A</b><small>المنتجات الأمريكية</small></button>
-              <button class="clay-tile bc-tile" data-format="UPCE"><b>UPC-E</b><small>مختصر أمريكي</small></button>
-            </div>
-          </div>
-          <div class="bc-group">
-            <span class="clay-kicker">صناعية · الشحن</span>
-            <div class="bc-grid">
-              <button class="clay-tile bc-tile" data-format="CODE39"><b>Code 39</b><small>أحرف وأرقام</small></button>
-              <button class="clay-tile bc-tile" data-format="CODE93"><b>Code 93</b><small>نسخة أكثف</small></button>
-              <button class="clay-tile bc-tile" data-format="ITF14"><b>ITF-14</b><small>صناديق الشحن</small></button>
-            </div>
-          </div>
-          <div class="bc-group">
-            <span class="clay-kicker">متخصصة</span>
-            <div class="bc-grid">
-              <button class="clay-tile bc-tile" data-format="codabar"><b>Codabar</b><small>المكتبات والبطاقات</small></button>
-              <button class="clay-tile bc-tile" data-format="MSI"><b>MSI</b><small>المخزون</small></button>
-              <button class="clay-tile bc-tile" data-format="pharmacode"><b>Pharmacode</b><small>الأدوية</small></button>
-            </div>
-          </div>
-          <p class="hint clay-muted" id="barcodeHint"></p>
-        </div>
-
-        <!-- ===== المحرر ===== -->
-        <div class="field" style="margin-top:14px">
-          <label for="multiInput">البيانات (سطر لكل رمز)</label>
-          <div class="editor">
-            <div class="ln" id="lineNumbers" aria-hidden="true">1</div>
-            <textarea id="multiInput" class="clay-textarea" spellcheck="false" placeholder="https://example.com&#10;نص حر&#10;بيانات أخرى…"></textarea>
-          </div>
-        </div>
-
-        <!-- ===== خيارات التصميم ===== -->
-        <details class="opts" id="designOpts">
-          <summary class="clay-tile clay-tile--block">
-            <span class="row" style="gap:10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg> خيارات التصميم</span>
-            <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-          </summary>
-
-          <div id="qrOpts" class="opts-grid">
-            <div class="field"><label>الحجم (px)</label><input type="number" class="clay-input" id="optSize" min="128" max="2048" value="512"></div>
-            <div class="field"><label>الهامش</label><input type="number" class="clay-input" id="optMargin" min="0" max="64" value="12"></div>
-            <div class="field"><label>تصحيح الأخطاء</label>
-              <select class="clay-select" id="optECC"><option value="L">منخفض (L)</option><option value="M" selected>متوسط (M)</option><option value="Q">عالٍ (Q)</option><option value="H">الأعلى (H)</option></select></div>
-            <div class="field"><label>نمط النقاط</label>
-              <select class="clay-select" id="optDots"><option value="square">مربع</option><option value="dots">نقاط</option><option value="rounded" selected>دائري</option><option value="classy">كلاسيكي</option><option value="classy-rounded">كلاسيكي دائري</option><option value="extra-rounded">دائري جدًا</option></select></div>
-            <div class="field"><label>نمط الزوايا</label>
-              <select class="clay-select" id="optCorners"><option value="square">مربع</option><option value="dot">دائري</option><option value="extra-rounded" selected>ناعم</option></select></div>
-            <div class="field"><label>اللون الأمامي</label><input type="color" class="clay-color" id="optFG" value="#10141D"></div>
-            <div class="field"><label>لون الخلفية</label><input type="color" class="clay-color" id="optBG" value="#ffffff"></div>
-            <div class="field"><label>التدرج</label>
-              <select class="clay-select" id="optGradient"><option value="none" selected>بدون</option><option value="linear">خطي</option><option value="radial">دائري</option></select></div>
-            <div class="field"><label>لون التدرج 1</label><input type="color" class="clay-color" id="optGrad1" value="#4EE34B"></div>
-            <div class="field"><label>لون التدرج 2</label><input type="color" class="clay-color" id="optGrad2" value="#10CCA4"></div>
-            <div class="field"><label>الشعار في المنتصف</label>
-              <div class="file-input"><button class="clay-tile clay-tile--block clay-tile--sm" type="button" id="logoBtnLabel">اختيار صورة</button><input type="file" id="optLogo" accept="image/*"></div></div>
-            <div class="field"><label>حجم الشعار %</label><input type="number" class="clay-input" id="optLogoSize" min="10" max="40" value="22"></div>
-            <div class="field"><label>إخفاء النقاط خلف الشعار</label>
-              <select class="clay-select" id="optHideBg"><option value="true" selected>نعم</option><option value="false">لا</option></select></div>
-          </div>
-
-          <div id="bcOpts" class="opts-grid" style="display:none">
-            <div class="field"><label>عرض الخط</label><input type="number" class="clay-input" id="bcWidth" min="1" max="5" step="0.5" value="2"></div>
-            <div class="field"><label>الارتفاع (px)</label><input type="number" class="clay-input" id="bcHeight" min="30" max="300" value="100"></div>
-            <div class="field"><label>إظهار النص</label><select class="clay-select" id="bcDisplayValue"><option value="true" selected>نعم</option><option value="false">لا</option></select></div>
-            <div class="field"><label>حجم الخط</label><input type="number" class="clay-input" id="bcFontSize" min="8" max="36" value="16"></div>
-            <div class="field"><label>محاذاة النص</label><select class="clay-select" id="bcTextAlign"><option value="center" selected>وسط</option><option value="left">يسار</option><option value="right">يمين</option></select></div>
-            <div class="field"><label>موضع النص</label><select class="clay-select" id="bcTextPosition"><option value="bottom" selected>أسفل</option><option value="top">أعلى</option></select></div>
-            <div class="field"><label>لون الخطوط</label><input type="color" class="clay-color" id="bcLineColor" value="#10141D"></div>
-            <div class="field"><label>لون الخلفية</label><input type="color" class="clay-color" id="bcBackground" value="#ffffff"></div>
-            <div class="field"><label>الهامش (px)</label><input type="number" class="clay-input" id="bcMargin" min="0" max="40" value="10"></div>
-          </div>
-        </details>
-
-        <!-- ===== الإجراءات ===== -->
-        <div class="actions">
-          <button class="clay-tile" id="downloadAllBtn" disabled title="تنزيل الكل (Ctrl+S)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-            تنزيل الكل ZIP
-          </button>
-          <button class="clay-tile clay-tile--danger" id="clearAllBtn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
-            مسح الكل
-          </button>
-          <span class="clay-badge" id="countBadge" style="display:none"></span>
-        </div>
-
-        <div class="results" id="results"></div>
-      </section>
-
-      <!-- ===== العمود الجانبي ===== -->
-      <aside class="side">
-        <!-- المعاينة -->
-        <section class="clay-panel">
-          <div class="section-head">
-            <div class="section-title">
-              <span class="clay-ic clay-ic--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span>
-              <div>
-                <span class="clay-kicker">Live</span>
-                <h2 class="clay-h2">معاينة مباشرة</h2>
-              </div>
-            </div>
-            <span class="clay-badge"><span class="clay-dot"></span> <span id="previewLabel">QR</span></span>
-          </div>
-          <div class="paper" id="previewCanvas"></div>
-          <div class="clay-pill preview-data" id="previewData" title="">—</div>
-          <div class="preview-actions">
-            <button class="clay-tile clay-tile--sm" id="copyPreviewPng" title="نسخ كصورة PNG">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              PNG
-            </button>
-            <button class="clay-tile clay-tile--sm" id="copyPreviewSvg" title="نسخ SVG">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 3v4a1 1 0 0 0 1 1h4M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M9 13h6M9 17h3"/></svg>
-              SVG
-            </button>
-            <button class="clay-tile clay-tile--sm clay-tile--grad" id="downloadPreview" title="حفظ PNG عالي الدقة">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-              حفظ
-            </button>
-          </div>
-        </section>
-
-        <!-- القارئ -->
-        <section class="clay-panel">
-          <div class="section-head">
-            <div class="section-title">
-              <span class="clay-ic clay-ic--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M3 12h18"/></svg></span>
-              <div>
-                <span class="clay-kicker">Reader</span>
-                <h2 class="clay-h2">قارئ الرموز</h2>
-              </div>
-            </div>
-          </div>
-          <div class="drop" id="decodeDrop" tabindex="0" role="button" aria-label="أفلت صورة رمز هنا">
-            <span class="clay-ic clay-ic--dark clay-ic--lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></span>
-            <div class="t">أفلت صورة رمز QR هنا</div>
-            <div class="s clay-muted">أو استخدم الأزرار أدناه</div>
-          </div>
-          <div class="dec-actions">
-            <button class="clay-tile clay-tile--sm" id="pasteBtn" title="لصق (Ctrl+V)">لصق</button>
-            <label class="clay-tile clay-tile--sm" for="decodeFileInput">رفع صورة</label>
-            <input type="file" id="decodeFileInput" accept="image/*" multiple class="sr-only" />
-            <button class="clay-tile clay-tile--sm" id="cameraBtn" title="الكاميرا (G)">كاميرا</button>
-          </div>
-          <video id="video" playsinline muted></video>
-          <div class="dec-list" id="decodeResults"></div>
-        </section>
-      </aside>
-    </div>
-
-    <!-- ===== بطاقة المطور ===== -->
-    <section class="dev-wrap" id="developer" aria-labelledby="devName">
-      <div class="dev">
-        <div class="dev-photo">
-          <div class="ph" aria-hidden="true"><span class="wave clay-wave"></span><b>ي</b></div>
-          <img src="assets/profile.webp" alt="يوسف حميد" decoding="async" loading="lazy" onerror="this.remove()">
-          <span class="dev-badge"><span class="pulse"></span>متاح للتواصل</span>
-        </div>
-        <div class="dev-body">
-          <p class="clay-kicker">تصميم وتطوير</p>
-          <h2 class="dev-name" id="devName">يوسف حميد</h2>
-          <p class="dev-role" dir="ltr">Senior Graphic Designer · AI Specialist</p>
-          <div class="dev-tags"><span>مصمم جرافيك</span><span>أخصائي ذكاء اصطناعي</span></div>
-
-          <div class="dev-actions">
-            <a class="dev-act" href="tel:+966553159341">
-              <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg></span>
-              <span>اتصال</span>
-            </a>
-            <a class="dev-act wa" href="https://wa.me/966553159341" target="_blank" rel="noopener noreferrer">
-              <span class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0 0 20.464 3.488"/></svg></span>
-              <span>واتساب</span>
-            </a>
-            <button class="dev-act" type="button" id="copyPhone" data-copy="0553159341">
-              <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
-              <span>نسخ الرقم</span>
-            </button>
-          </div>
-
-          <div class="dev-rows">
-            <a class="dev-row" href="tel:+966553159341"><span class="k">الجوال</span><span class="v" dir="ltr">+966 55 315 9341</span></a>
-            <a class="dev-row" href="https://www.behance.net/yosfgfx" target="_blank" rel="noopener"><span class="k">الأعمال</span><span class="v" dir="ltr">behance.net/yosfgfx</span></a>
-            <div class="dev-row"><span class="k">المشروع</span><span class="v">Clay QR Studio <em>الإصدار ٤</em></span></div>
-          </div>
-          <p class="dev-note">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg>
-            صُنع بحب في الرياض — أداة ويب تعمل بالكامل في المتصفح، بلا خادم، مع ملفات دائمة في السحابة.
-          </p>
-        </div>
+    <section class="clay-panel">
+      <label class="clay-label" for="url-input">ادخل الروابط هنا</label>
+      <div class="editor">
+        <div class="ln" id="ln" aria-hidden="true">1</div>
+        <textarea id="url-input" class="clay-textarea" spellcheck="false" placeholder="example.com&#10;https://github.com/yosfgfx&#10;behance.net/yosfgfx"></textarea>
       </div>
+      <div class="bar">
+        <span class="clay-badge" id="count" style="display:none"></span>
+        <span class="spacer"></span>
+        <button class="clay-tile clay-tile--sm" id="clearBtn">مسح</button>
+        <button class="clay-tile clay-tile--grad" id="zipBtn" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          تنزيل الكل ZIP
+        </button>
+      </div>
+      <div class="grid" id="qr-codes"></div>
     </section>
-  </div>
+
+    <a class="clay-panel upsell" href="studio.html" id="upsell" data-ver-link>
+      <span class="clay-ic clay-ic--lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg></span>
+      <span class="tx">
+        <b>تحتاج أكثر؟ جرّب الإصدار الكامل</b>
+        <span class="clay-muted">ملفات → روابط دائمة، Wi-Fi، جهات اتصال، واتساب، أحداث، باركود بـ 11 صيغة، تخصيص الألوان والشعار، وقارئ رموز.</span>
+      </span>
+      <span class="clay-tile clay-tile--sm">انتقال</span>
+    </a>
+
+    <p class="foot clay-muted">صُنع بحب في الرياض · <a href="studio.html#developer" data-ver-link>معلومات المطوّر</a></p>
+  </main>
 
   <div class="toasts" id="toasts" aria-live="polite"></div>
 
-  <!-- ===== نافذة المساعدة ===== -->
-  <div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
-    <div class="clay-panel">
-      <div class="section-head">
-        <div class="section-title">
-          <span class="clay-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg></span>
-          <h2 class="clay-h2" id="helpTitle">كيف تعمل الأداة؟</h2>
-        </div>
-        <button class="clay-tile clay-tile--sm clay-tile--icon" id="closeHelp" title="إغلاق"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-      </div>
-      <div class="clay-tray" style="margin-bottom:14px; font-size:13.5px; line-height:1.9">
-        <b>الملفات الدائمة:</b> عند اختيار «ملف → رابط دائم» يُرفع الملف إلى تخزين سحابي مجاني (Supabase Storage) ويُسمّى ببصمة SHA-256 لمحتواه. لا يمكن تعديله أو حذفه عبر الأداة، لذلك الرابط المطبوع في رمز QR يبقى صالحًا دائمًا. يُحفظ سجل روابطك على جهازك فقط.
-        <div class="clay-divider"></div>
-        <b>الخصوصية:</b> كل من يملك الرابط يستطيع فتح الملف، فلا ترفع ملفات حساسة. الحد الأقصى 25 MB للملف.
-      </div>
-      <div class="kbd-list">
-        <div class="clay-tray kbd-row"><span class="k"><span class="clay-pill">Ctrl</span><span class="clay-pill">Enter</span></span><span class="d">توليد الرموز</span></div>
-        <div class="clay-tray kbd-row"><span class="k"><span class="clay-pill">Ctrl</span><span class="clay-pill">S</span></span><span class="d">تنزيل الكل كملف ZIP</span></div>
-        <div class="clay-tray kbd-row"><span class="k"><span class="clay-pill">Ctrl</span><span class="clay-pill">V</span></span><span class="d">لصق صورة أو نص وفك تشفيره</span></div>
-        <div class="clay-tray kbd-row"><span class="k"><span class="clay-pill">G</span></span><span class="d">تشغيل/إيقاف الكاميرا</span></div>
-        <div class="clay-tray kbd-row"><span class="k"><span class="clay-pill">?</span></span><span class="d">عرض هذه النافذة</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== المكتبات ===== -->
-  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-  <script src="config.js"></script>
-  <script src="storage.js"></script>
-
   <script>
   (function () {
     'use strict';
+    var input = document.getElementById('url-input'), ln = document.getElementById('ln'), grid = document.getElementById('qr-codes');
+    var zipBtn = document.getElementById('zipBtn'), clearBtn = document.getElementById('clearBtn'), count = document.getElementById('count');
+    var toasts = document.getElementById('toasts');
+    var items = []; // {name, svg}
+    var timer;
 
-    // ===== الحالة =====
-    const app = {
-      mode: 'qr',
-      type: 'text',
-      barcodeFormat: 'CODE128',
-      items: [],            // {id, kind:'qr'|'barcode', data, title, instance?, format?}
-      previewQR: null,
-      logoDataUrl: null,
-      cameraStream: null,
-      scanning: false,
-      settings: {}
-    };
+    input.addEventListener('input', function () { lines(); clearTimeout(timer); timer = setTimeout(generate, 180); });
+    zipBtn.addEventListener('click', downloadAll);
+    clearBtn.addEventListener('click', function () { input.value = ''; lines(); generate(); input.focus(); });
+    grid.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-act]'); if (!b) return;
+      var card = b.closest('.card'), i = +card.dataset.i, it = items[i]; if (!it) return;
+      var act = b.dataset.act;
+      if (act === 'svg') saveAs(new Blob([it.svg], { type: 'image/svg+xml;charset=utf-8' }), it.name + '.svg');
+      if (act === 'png') toPng(it.svg).then(function (blob) { saveAs(blob, it.name + '.png'); });
+      if (act === 'copy-svg') navigator.clipboard.writeText(it.svg).then(function () { toast('تم نسخ SVG'); }, fail);
+      if (act === 'copy-png') toPng(it.svg).then(function (blob) { return navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); }).then(function () { toast('تم نسخ PNG'); }, fail);
+    });
 
-    const $ = s => document.querySelector(s);
-    const $$ = s => Array.from(document.querySelectorAll(s));
-    const els = {
-      input: $('#multiInput'), ln: $('#lineNumbers'), results: $('#results'),
-      generateBtn: $('#generateBtn'), downloadAllBtn: $('#downloadAllBtn'), clearAllBtn: $('#clearAllBtn'), countBadge: $('#countBadge'),
-      helpBtn: $('#helpBtn'), helpModal: $('#helpModal'), closeHelp: $('#closeHelp'),
-      qrTypes: $('#qrTypes'), typesMore: $('#typesMore'), moreTypesBtn: $('#moreTypesBtn'), typeHint: $('#typeHint'),
-      builder: $('#builder'), builderFields: $('#builderFields'), builderTitle: $('#builderTitle'), builderIcon: $('#builderIcon'),
-      addToList: $('#addToList'), previewBuilder: $('#previewBuilder'), closeBuilder: $('#closeBuilder'),
-      fileBuilder: $('#fileBuilder'), closeFileBuilder: $('#closeFileBuilder'), fileDrop: $('#fileDrop'), fileInputUpload: $('#fileInputUpload'),
-      fileForceDownload: $('#fileForceDownload'), storageStatus: $('#storageStatus'), uploadList: $('#uploadList'), fileLimitText: $('#fileLimitText'),
-      historyList: $('#historyList'), historyCount: $('#historyCount'), exportHistory: $('#exportHistory'), clearHistory: $('#clearHistory'),
-      barcodeTypes: $('#barcodeTypes'), barcodeHint: $('#barcodeHint'),
-      qrOpts: $('#qrOpts'), bcOpts: $('#bcOpts'),
-      previewCanvas: $('#previewCanvas'), previewData: $('#previewData'), previewLabel: $('#previewLabel'),
-      decodeDrop: $('#decodeDrop'), decodeFileInput: $('#decodeFileInput'), pasteBtn: $('#pasteBtn'), cameraBtn: $('#cameraBtn'), video: $('#video'), decodeResults: $('#decodeResults'),
-      toasts: $('#toasts')
-    };
+    function lines() { ln.textContent = input.value.split('\n').map(function (_, i) { return i + 1; }).join('\n'); }
 
-    // ===== أنواع الباركود =====
-    const BARCODES = {
-      CODE128: { name: 'Code 128', hint: 'يقبل جميع أحرف ASCII، الأكثر تنوعًا واستخدامًا', ph: 'Example-123' },
-      EAN13:   { name: 'EAN-13', hint: '12 أو 13 رقمًا، معيار المنتجات العالمي', ph: '5901234123457' },
-      EAN8:    { name: 'EAN-8', hint: '7 أو 8 أرقام للمنتجات الصغيرة', ph: '96385074' },
-      UPC:     { name: 'UPC-A', hint: '11 أو 12 رقمًا، معيار المنتجات الأمريكية', ph: '123456789012' },
-      UPCE:    { name: 'UPC-E', hint: '6 إلى 8 أرقام، النسخة المختصرة', ph: '01234565' },
-      CODE39:  { name: 'Code 39', hint: 'أحرف كبيرة A-Z وأرقام ورموز - $ / . + %', ph: 'CODE-39' },
-      CODE93:  { name: 'Code 93', hint: 'مشابه لـ Code 39 لكن أكثر كثافة', ph: 'CODE93' },
-      ITF14:   { name: 'ITF-14', hint: '13 أو 14 رقمًا لصناديق الشحن', ph: '98249880215005' },
-      codabar: { name: 'Codabar', hint: 'أرقام ورموز - $ : / . + ويبدأ وينتهي بـ A-D', ph: 'A12345B' },
-      MSI:     { name: 'MSI', hint: 'أرقام فقط لإدارة المخزون', ph: '1234567' },
-      pharmacode: { name: 'Pharmacode', hint: 'رقم بين 3 و 131070 لصناعة الأدوية', ph: '1234' }
-    };
+    function validUrl(s) { try { new URL(s); return s; } catch (_) { return 'https://' + s; } }
+    function nameOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (_) { return 'qr'; } }
 
-    // ===== أنواع QR (الخيارات المتقدمة) =====
-    const digits = v => (v || '').replace(/[^\d+]/g, '').replace(/^\+/, '+').replace(/(?!^)\+/g, '');
-    const esc = v => (v || '').replace(/([\\;,:"])/g, '\\$1');
-    const icsDate = v => { if (!v) return ''; const d = new Date(v); if (isNaN(d)) return ''; return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); };
-    const TYPES = {
-      text: { title: 'نص / رابط', hint: 'اكتب الروابط أو النصوص في المحرر أدناه، سطرًا لكل رمز، وسيظهر أول سطر في المعاينة فورًا.', fields: [] },
-      file: { title: 'ملف → رابط دائم', hint: 'ارفع ملفًا وسيُضاف رابطه الدائم تلقائيًا إلى القائمة كرمز QR.', fields: [] },
-      wifi: {
-        title: 'شبكة Wi-Fi', hint: 'عند مسح الرمز يتصل الهاتف بالشبكة مباشرة دون كتابة كلمة المرور.',
-        fields: [
-          { id: 'ssid', label: 'اسم الشبكة (SSID)', type: 'text', required: true },
-          { id: 'password', label: 'كلمة المرور', type: 'text' },
-          { id: 'enc', label: 'نوع التشفير', type: 'select', options: [['WPA', 'WPA / WPA2 / WPA3'], ['WEP', 'WEP'], ['nopass', 'بدون كلمة مرور']] },
-          { id: 'hidden', label: 'شبكة مخفية', type: 'select', options: [['0', 'لا'], ['1', 'نعم']] }
-        ],
-        build: d => `WIFI:T:${d.enc};S:${esc(d.ssid)};P:${esc(d.password)};${d.hidden === '1' ? 'H:true;' : ''};`
-      },
-      vcard: {
-        title: 'جهة اتصال (vCard)', hint: 'يحفظ الممسوح جهة الاتصال في هاتفه بنقرة واحدة.',
-        fields: [
-          { id: 'name', label: 'الاسم الكامل', type: 'text', required: true },
-          { id: 'phone', label: 'الجوال', type: 'tel' },
-          { id: 'email', label: 'البريد الإلكتروني', type: 'email' },
-          { id: 'org', label: 'الجهة / الشركة', type: 'text' },
-          { id: 'title', label: 'المسمى الوظيفي', type: 'text' },
-          { id: 'url', label: 'الموقع الإلكتروني', type: 'url' },
-          { id: 'address', label: 'العنوان', type: 'text', full: true }
-        ],
-        build: d => ['BEGIN:VCARD', 'VERSION:3.0', `N:${esc(d.name)};;;;`, `FN:${esc(d.name)}`,
-          d.org && `ORG:${esc(d.org)}`, d.title && `TITLE:${esc(d.title)}`, d.phone && `TEL;TYPE=CELL:${d.phone}`,
-          d.email && `EMAIL:${d.email}`, d.url && `URL:${d.url}`, d.address && `ADR;TYPE=WORK:;;${esc(d.address)};;;;`, 'END:VCARD'
-        ].filter(Boolean).join('\n')
-      },
-      email: {
-        title: 'بريد إلكتروني', hint: 'يفتح تطبيق البريد برسالة جاهزة.',
-        fields: [
-          { id: 'to', label: 'إلى', type: 'email', required: true },
-          { id: 'subject', label: 'الموضوع', type: 'text' },
-          { id: 'body', label: 'نص الرسالة', type: 'textarea', full: true }
-        ],
-        build: d => { const q = []; if (d.subject) q.push('subject=' + encodeURIComponent(d.subject)); if (d.body) q.push('body=' + encodeURIComponent(d.body)); return `mailto:${d.to}${q.length ? '?' + q.join('&') : ''}`; }
-      },
-      sms: {
-        title: 'رسالة SMS', hint: 'يفتح تطبيق الرسائل برقم ونص جاهزين.',
-        fields: [
-          { id: 'number', label: 'رقم الجوال (بالصيغة الدولية)', type: 'tel', required: true, ph: '+9665xxxxxxxx' },
-          { id: 'message', label: 'نص الرسالة', type: 'textarea', full: true }
-        ],
-        build: d => `SMSTO:${digits(d.number)}:${d.message || ''}`
-      },
-      tel: {
-        title: 'اتصال هاتفي', hint: 'يبدأ الاتصال بالرقم مباشرة عند المسح.',
-        fields: [{ id: 'number', label: 'رقم الهاتف (بالصيغة الدولية)', type: 'tel', required: true, ph: '+9665xxxxxxxx' }],
-        build: d => `tel:${digits(d.number)}`
-      },
-      whatsapp: {
-        title: 'محادثة واتساب', hint: 'يفتح محادثة واتساب مع الرقم ورسالة جاهزة (اختياري).',
-        fields: [
-          { id: 'number', label: 'رقم واتساب (بالصيغة الدولية بدون +)', type: 'tel', required: true, ph: '9665xxxxxxxx' },
-          { id: 'message', label: 'رسالة جاهزة', type: 'textarea', full: true }
-        ],
-        build: d => `https://wa.me/${digits(d.number).replace('+', '')}${d.message ? '?text=' + encodeURIComponent(d.message) : ''}`
-      },
-      geo: {
-        title: 'موقع جغرافي', hint: 'يفتح الموقع في تطبيق الخرائط. يمكنك لصق الإحداثيات من خرائط Google.',
-        fields: [
-          { id: 'lat', label: 'خط العرض (Latitude)', type: 'number', required: true, step: 'any', ph: '24.7136' },
-          { id: 'lng', label: 'خط الطول (Longitude)', type: 'number', required: true, step: 'any', ph: '46.6753' },
-          { id: 'label', label: 'اسم المكان (اختياري)', type: 'text', full: true },
-          { id: 'style', label: 'الصيغة', type: 'select', options: [['gmaps', 'رابط خرائط Google (يعمل على كل الأجهزة)'], ['geo', 'geo: قياسي']] }
-        ],
-        build: d => d.style === 'geo' ? `geo:${d.lat},${d.lng}${d.label ? '?q=' + encodeURIComponent(d.label) : ''}` : `https://maps.google.com/?q=${d.lat},${d.lng}`
-      },
-      event: {
-        title: 'حدث تقويم', hint: 'يضيف الحدث إلى تقويم الهاتف.',
-        fields: [
-          { id: 'summary', label: 'عنوان الحدث', type: 'text', required: true, full: true },
-          { id: 'start', label: 'البداية', type: 'datetime-local', required: true },
-          { id: 'end', label: 'النهاية', type: 'datetime-local' },
-          { id: 'location', label: 'المكان', type: 'text' },
-          { id: 'url', label: 'رابط', type: 'url' },
-          { id: 'description', label: 'الوصف', type: 'textarea', full: true }
-        ],
-        build: d => ['BEGIN:VEVENT', `SUMMARY:${esc(d.summary)}`, `DTSTART:${icsDate(d.start)}`, d.end && `DTEND:${icsDate(d.end)}`,
-          d.location && `LOCATION:${esc(d.location)}`, d.url && `URL:${d.url}`, d.description && `DESCRIPTION:${esc(d.description)}`, 'END:VEVENT'].filter(Boolean).join('\n')
-      },
-      social: {
-        title: 'حساب اجتماعي', hint: 'اختر المنصة واكتب اسم المستخدم فقط.',
-        fields: [
-          { id: 'platform', label: 'المنصة', type: 'select', options: [['x', 'X (تويتر)'], ['instagram', 'Instagram'], ['tiktok', 'TikTok'], ['snapchat', 'Snapchat'], ['youtube', 'YouTube'], ['linkedin', 'LinkedIn'], ['facebook', 'Facebook'], ['telegram', 'Telegram'], ['behance', 'Behance'], ['github', 'GitHub']] },
-          { id: 'user', label: 'اسم المستخدم', type: 'text', required: true, ph: 'username' }
-        ],
-        build: d => {
-          const u = d.user.replace(/^@/, '').trim();
-          const map = { x: 'https://x.com/', instagram: 'https://instagram.com/', tiktok: 'https://tiktok.com/@', snapchat: 'https://snapchat.com/add/', youtube: 'https://youtube.com/@', linkedin: 'https://linkedin.com/in/', facebook: 'https://facebook.com/', telegram: 'https://t.me/', behance: 'https://behance.net/', github: 'https://github.com/' };
-          return map[d.platform] + u;
-        }
-      },
-      app: {
-        title: 'تطبيق في المتجر', hint: 'ضع رابط App Store و/أو Google Play. مع رابطين يُنشأ رمز لكل منهما.',
-        fields: [
-          { id: 'ios', label: 'رابط App Store', type: 'url', full: true, ph: 'https://apps.apple.com/…' },
-          { id: 'android', label: 'رابط Google Play', type: 'url', full: true, ph: 'https://play.google.com/store/apps/details?id=…' }
-        ],
-        build: d => [d.ios, d.android].filter(Boolean).join('\n'),
-        validate: d => (d.ios || d.android) ? '' : 'أدخل رابطًا واحدًا على الأقل'
-      }
-    };
-
-    // ===== التهيئة =====
-    function init() {
-      loadSettings();
-      bind();
-      updateLineNumbers();
-      loadDraft();
-      renderHistory();
-      checkStorage();
-      checkFeatures();
-      setTimeout(updatePreview, 200);
-    }
-
-    function bind() {
-      els.helpBtn.addEventListener('click', () => openModal(els.helpModal));
-      $('#copyPhone').addEventListener('click', e => copyText(e.currentTarget.dataset.copy));
-      $('#devLink').addEventListener('click', e => { e.preventDefault(); $('#developer').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
-      els.closeHelp.addEventListener('click', () => closeModal(els.helpModal));
-      els.helpModal.addEventListener('click', e => { if (e.target === els.helpModal) closeModal(els.helpModal); });
-
-      els.generateBtn.addEventListener('click', generateCodes);
-      els.downloadAllBtn.addEventListener('click', downloadAll);
-      els.clearAllBtn.addEventListener('click', clearAll);
-      els.input.addEventListener('input', () => { updateLineNumbers(); debouncedPreview(); debouncedDraft(); });
-      els.input.addEventListener('scroll', () => { els.ln.style.transform = `translateY(${-els.input.scrollTop}px)`; });
-
-      $$('[data-mode]').forEach(b => b.addEventListener('click', () => switchMode(b.dataset.mode)));
-      $$('.bc-tile').forEach(b => b.addEventListener('click', () => setBarcodeFormat(b.dataset.format)));
-      $$('.type-tile').forEach(b => b.addEventListener('click', () => selectType(b.dataset.type)));
-      els.moreTypesBtn.addEventListener('click', toggleMoreTypes);
-      els.closeBuilder.addEventListener('click', () => selectType('text'));
-      els.closeFileBuilder.addEventListener('click', () => selectType('text'));
-      els.addToList.addEventListener('click', () => commitBuilder(true));
-      els.previewBuilder.addEventListener('click', () => commitBuilder(false));
-
-      // رفع الملفات
-      els.fileDrop.addEventListener('click', () => els.fileInputUpload.click());
-      els.fileDrop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); els.fileInputUpload.click(); } });
-      els.fileInputUpload.addEventListener('change', e => { handleUploadFiles(Array.from(e.target.files)); e.target.value = ''; });
-      dragDrop(els.fileDrop, files => handleUploadFiles(files));
-      els.fileForceDownload.addEventListener('change', () => saveSettings());
-      els.exportHistory.addEventListener('click', exportHistory);
-      els.clearHistory.addEventListener('click', () => { if (confirm('مسح سجل الروابط من هذا الجهاز؟ (الملفات نفسها تبقى في السحابة)')) { localStorage.removeItem(HISTORY_KEY); renderHistory(); } });
-
-      // خيارات التصميم
-      $$('#qrOpts input, #qrOpts select, #bcOpts input, #bcOpts select').forEach(el => {
-        if (el.id === 'optLogo') return;
-        el.addEventListener('input', () => { saveSettings(); debouncedPreview(); });
-        el.addEventListener('change', () => { saveSettings(); debouncedPreview(); });
+    function generate() {
+      var raw = input.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+      items = []; grid.innerHTML = '';
+      var used = {};
+      raw.forEach(function (line, i) {
+        var url = validUrl(line);
+        var name = nameOf(url);
+        if (used[name] !== undefined) { used[name]++; name = name + ' ' + used[name]; } else { used[name] = 0; }
+        var qr = qrcode(0, 'M'); qr.addData(url); qr.make();
+        var svg = qr.createSvgTag({ scalable: true, margin: 2 });
+        items.push({ name: name, svg: svg });
+        var card = document.createElement('div');
+        card.className = 'card'; card.dataset.i = i; card.style.animationDelay = Math.min(i * 40, 400) + 'ms';
+        card.innerHTML = '<h3 title="' + esc(url) + '">' + esc(name) + '</h3><div class="paper">' + svg + '</div>' +
+          '<div class="acts"><button class="clay-tile" data-act="copy-svg">نسخ SVG</button><button class="clay-tile" data-act="copy-png">نسخ PNG</button>' +
+          '<button class="clay-tile clay-tile--grad" data-act="svg">حفظ SVG</button><button class="clay-tile clay-tile--grad" data-act="png">حفظ PNG</button></div>';
+        grid.appendChild(card);
       });
-      $('#optLogo').addEventListener('change', handleLogo);
-
-      // المعاينة
-      $('#copyPreviewPng').addEventListener('click', () => copyPreview('png'));
-      $('#copyPreviewSvg').addEventListener('click', () => copyPreview('svg'));
-      $('#downloadPreview').addEventListener('click', downloadPreview);
-
-      // القارئ
-      els.pasteBtn.addEventListener('click', pasteFromClipboard);
-      els.decodeFileInput.addEventListener('change', e => { Array.from(e.target.files).forEach(decodeFile); e.target.value = ''; });
-      els.cameraBtn.addEventListener('click', toggleCamera);
-      els.decodeDrop.addEventListener('click', () => els.decodeFileInput.click());
-      dragDrop(els.decodeDrop, files => files.forEach(decodeFile));
-
-      document.addEventListener('keydown', onKey);
-      document.addEventListener('visibilitychange', () => { if (document.hidden && app.scanning) stopCamera(); });
-      window.addEventListener('unhandledrejection', e => { console.error(e.reason); toast('حدث خطأ أثناء المعالجة', 'danger'); });
+      zipBtn.disabled = items.length < 2;
+      count.style.display = items.length ? '' : 'none';
+      count.textContent = items.length + ' رمز';
     }
 
-    function dragDrop(zone, onFiles) {
-      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); }));
-      ['dragenter', 'dragover'].forEach(ev => zone.addEventListener(ev, () => zone.classList.add('over')));
-      ['dragleave', 'drop'].forEach(ev => zone.addEventListener(ev, () => zone.classList.remove('over')));
-      zone.addEventListener('drop', e => { const files = Array.from(e.dataTransfer.files || []); if (files.length) onFiles(files); });
-    }
-
-    // ===== الإعدادات =====
-    const SETTINGS_KEY = 'qr-app-settings-v4';
-    const DRAFT_KEY = 'qr-app-draft-v4';
-    const HISTORY_KEY = 'qr-file-history-v1';
-    const FIELD_IDS = ['optSize', 'optMargin', 'optECC', 'optDots', 'optCorners', 'optFG', 'optBG', 'optGradient', 'optGrad1', 'optGrad2', 'optLogoSize', 'optHideBg',
-      'bcWidth', 'bcHeight', 'bcDisplayValue', 'bcFontSize', 'bcTextAlign', 'bcTextPosition', 'bcLineColor', 'bcBackground', 'bcMargin'];
-
-    function saveSettings() {
-      const s = { mode: app.mode, barcodeFormat: app.barcodeFormat, forceDownload: els.fileForceDownload.checked, moreTypes: els.typesMore.classList.contains('show') };
-      FIELD_IDS.forEach(id => { s[id] = $('#' + id).value; });
-      try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch (_) {}
-      app.settings = s;
-    }
-    function loadSettings() {
-      try { app.settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); } catch (_) { app.settings = {}; }
-      const s = app.settings;
-      FIELD_IDS.forEach(id => { if (s[id] !== undefined) $('#' + id).value = s[id]; });
-      els.fileForceDownload.checked = !!s.forceDownload;
-      if (s.moreTypes) toggleMoreTypes(true);
-      if (s.barcodeFormat && BARCODES[s.barcodeFormat]) setBarcodeFormat(s.barcodeFormat, false);
-      switchMode(s.mode === 'barcode' ? 'barcode' : 'qr', false);
-    }
-    const debouncedDraft = debounce(() => { try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: els.input.value, t: Date.now() })); } catch (_) {} }, 400);
-    function loadDraft() {
-      try {
-        const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
-        if (d && d.v && Date.now() - d.t < 7 * 86400000) { els.input.value = d.v; updateLineNumbers(); }
-      } catch (_) {}
-    }
-
-    // ===== الوضع والنوع =====
-    function switchMode(mode, persist = true) {
-      app.mode = mode;
-      $$('[data-mode]').forEach(b => { const on = b.dataset.mode === mode; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); });
-      const qr = mode === 'qr';
-      els.qrTypes.style.display = qr ? '' : 'none';
-      els.barcodeTypes.style.display = qr ? 'none' : '';
-      els.qrOpts.style.display = qr ? '' : 'none';
-      els.bcOpts.style.display = qr ? 'none' : '';
-      els.previewLabel.textContent = qr ? 'QR' : (BARCODES[app.barcodeFormat].name);
-      if (!qr) { els.builder.classList.remove('show'); els.fileBuilder.classList.remove('show'); updateBarcodeHint(); }
-      else { els.input.placeholder = 'https://example.com\nنص حر\nبيانات أخرى…'; }
-      if (persist) saveSettings();
-      debouncedPreview();
-    }
-    function setBarcodeFormat(fmt, persist = true) {
-      app.barcodeFormat = fmt;
-      $$('.bc-tile').forEach(b => b.classList.toggle('active', b.dataset.format === fmt));
-      updateBarcodeHint();
-      els.previewLabel.textContent = BARCODES[fmt].name;
-      if (persist) { saveSettings(); debouncedPreview(); }
-    }
-    function updateBarcodeHint() {
-      const b = BARCODES[app.barcodeFormat];
-      els.barcodeHint.textContent = `${b.name}: ${b.hint}. مثال: ${b.ph}`;
-      els.input.placeholder = b.ph + '\n' + b.hint;
-    }
-    function toggleMoreTypes(force) {
-      const show = typeof force === 'boolean' ? force : !els.typesMore.classList.contains('show');
-      els.typesMore.classList.toggle('show', show);
-      els.moreTypesBtn.setAttribute('aria-expanded', show);
-      els.moreTypesBtn.querySelector('.chev').style.transform = show ? 'rotate(180deg)' : '';
-      if (typeof force !== 'boolean') saveSettings();
-    }
-
-    function selectType(type) {
-      app.type = type;
-      $$('.type-tile').forEach(b => b.classList.toggle('active', b.dataset.type === type));
-      const t = TYPES[type];
-      els.typeHint.textContent = t.hint;
-      els.fileBuilder.classList.toggle('show', type === 'file');
-      if (type === 'text' || type === 'file') { els.builder.classList.remove('show'); if (type === 'text') els.input.focus(); return; }
-      // بناء النموذج
-      els.builderTitle.textContent = t.title;
-      els.builderIcon.innerHTML = $(`.type-tile[data-type="${type}"] .clay-ic`).innerHTML;
-      els.builderFields.innerHTML = '';
-      t.fields.forEach(f => {
-        const wrap = document.createElement('div');
-        wrap.className = 'field' + (f.full ? ' full' : '');
-        let ctrl;
-        if (f.type === 'select') {
-          ctrl = `<select class="clay-select" id="b_${f.id}">${f.options.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>`;
-        } else if (f.type === 'textarea') {
-          ctrl = `<textarea class="clay-textarea" id="b_${f.id}" rows="3" placeholder="${f.ph || ''}"></textarea>`;
-        } else {
-          ctrl = `<input class="clay-input" type="${f.type}" id="b_${f.id}" ${f.step ? `step="${f.step}"` : ''} placeholder="${f.ph || ''}" ${f.type === 'tel' || f.type === 'url' || f.type === 'email' || f.type === 'number' ? 'dir="ltr"' : ''}>`;
-        }
-        wrap.innerHTML = `<label for="b_${f.id}">${f.label} ${f.required ? '<span class="req">*</span>' : ''}</label>${ctrl}`;
-        els.builderFields.appendChild(wrap);
-      });
-      els.builder.classList.add('show');
-      const first = els.builderFields.querySelector('input, select, textarea');
-      if (first) first.focus();
-    }
-
-    function readBuilder() {
-      const t = TYPES[app.type];
-      const d = {}; let ok = true;
-      t.fields.forEach(f => {
-        const el = $('#b_' + f.id);
-        const v = (el.value || '').trim();
-        d[f.id] = v;
-        const bad = f.required && !v;
-        el.style.boxShadow = bad ? 'var(--press), 0 0 0 2px rgba(255,90,110,.55)' : '';
-        if (bad) ok = false;
-      });
-      if (!ok) { toast('يرجى تعبئة الحقول المطلوبة', 'danger'); return null; }
-      if (t.validate) { const m = t.validate(d); if (m) { toast(m, 'danger'); return null; } }
-      return t.build(d);
-    }
-
-    function commitBuilder(add) {
-      const data = readBuilder();
-      if (data === null) return;
-      if (add) {
-        appendLines(data);
-        toast('تمت الإضافة إلى القائمة');
-      } else {
-        renderPreviewFor(data.split('\n')[0]);
-        els.previewData.textContent = data.replace(/\n/g, ' ⏎ ');
-        els.previewData.title = data;
-      }
-    }
-
-    // الأسطر متعددة الأسطر (vCard/Event) تُحفظ في القائمة بسطر واحد باستخدام فاصل خاص
-    const NL = '⏎';
-    function appendLines(data) {
-      const line = data.replace(/\n/g, NL);
-      els.input.value = (els.input.value.trim() ? els.input.value.replace(/\s+$/, '') + '\n' : '') + line;
-      updateLineNumbers();
-      debouncedDraft();
-      updatePreview();
-    }
-    function getLines() { return els.input.value.split('\n').map(l => l.trim()).filter(Boolean).map(l => l.split(NL).join('\n')); }
-
-    // ===== رفع الملفات → رابط دائم =====
-    async function checkStorage() {
-      const ok = window.QRStorage && QRStorage.isConfigured();
-      els.storageStatus.innerHTML = ok
-        ? '<span class="clay-dot"></span> التخزين السحابي جاهز'
-        : '<span class="clay-dot clay-dot--danger"></span> التخزين غير مُعدّ (config.js)';
-      const c = (window.QR_CONFIG && QR_CONFIG.storage) || {};
-      if (c.maxBytes) els.fileLimitText.textContent = `PDF، صور، مستندات، صوت، فيديو، ملفات مضغوطة… حتى ${Math.round(c.maxBytes / 1048576)} MB للملف`;
-    }
-
-    async function handleUploadFiles(files) {
-      if (!files.length) return;
-      if (!(window.QRStorage && QRStorage.isConfigured())) { toast('التخزين السحابي غير مُعدّ', 'danger'); return; }
-      for (const file of files) await uploadOne(file);
-    }
-
-    async function uploadOne(file) {
-      const row = document.createElement('div');
-      row.className = 'clay-tray upload-item';
-      row.innerHTML = `
-        <div class="name"><span class="clay-ic clay-ic--sm clay-ic--dark">${fileIcon(file)}</span><b title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</b><span class="clay-badge">${fmtSize(file.size)}</span></div>
-        <div class="progress"><i style="width:0"></i></div>
-        <div class="meta clay-muted" style="font-size:12px"><span class="stage">جارٍ حساب البصمة…</span></div>`;
-      els.uploadList.prepend(row);
-      const bar = row.querySelector('.progress i');
-      const stage = row.querySelector('.stage');
-      const stages = { hash: 'جارٍ حساب بصمة الملف…', check: 'جارٍ التحقق من وجود الملف…', upload: 'جارٍ الرفع إلى السحابة…', done: 'اكتمل' };
-      try {
-        const r = await QRStorage.putFile(file, {
-          onProgress: p => { bar.style.width = Math.round(p * 100) + '%'; },
-          onStage: s => { stage.textContent = stages[s] || s; }
-        });
-        bar.style.width = '100%';
-        const url = els.fileForceDownload.checked ? r.downloadUrl : r.url;
-        row.querySelector('.progress').remove();
-        row.querySelector('.meta').innerHTML = `
-          <span class="clay-badge clay-badge--grad">${r.reused ? 'موجود مسبقًا، أُعيد استخدام الرابط' : 'تم الرفع'}</span>
-          <span class="clay-badge">SHA-256 · ${r.hash.slice(0, 12)}…</span>`;
-        const link = document.createElement('div');
-        link.className = 'link';
-        link.innerHTML = `<span class="clay-pill" title="${escapeHtml(url)}">${escapeHtml(url)}</span>
-          <button class="clay-tile clay-tile--sm" data-act="copy">نسخ</button>
-          <a class="clay-tile clay-tile--sm" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">فتح</a>`;
-        link.querySelector('[data-act="copy"]').addEventListener('click', () => copyText(url));
-        row.appendChild(link);
-        addHistory({ name: file.name, size: file.size, url: r.url, hash: r.hash, t: Date.now() });
-        appendLines(url);
-        toast(r.reused ? 'الملف موجود مسبقًا وأُضيف رابطه الدائم' : 'تم رفع الملف وإضافة رابطه الدائم');
-        await generateCodes({ silent: true });
-      } catch (e) {
-        console.error(e);
-        row.querySelector('.progress').remove();
-        row.querySelector('.meta').innerHTML = `<span class="clay-badge" style="color:var(--danger)">فشل: ${escapeHtml(e.message || 'خطأ غير معروف')}</span>`;
-        toast('فشل رفع الملف: ' + (e.message || ''), 'danger');
-      }
-    }
-
-    function fileIcon(file) {
-      const t = file.type || '';
-      if (t.startsWith('image/')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>';
-      if (t.startsWith('video/')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="13" height="14" rx="3"/><path d="m16 10 5-3v10l-5-3"/></svg>';
-      if (t.startsWith('audio/')) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>';
-      if (t === 'application/pdf') return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5M9 13h6M9 17h6"/></svg>';
-      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/></svg>';
-    }
-    function fmtSize(b) { if (b < 1024) return b + ' B'; if (b < 1048576) return (b / 1024).toFixed(1) + ' KB'; return (b / 1048576).toFixed(2) + ' MB'; }
-
-    function getHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch (_) { return []; } }
-    function addHistory(entry) {
-      const h = getHistory().filter(x => x.url !== entry.url);
-      h.unshift(entry);
-      try { localStorage.setItem(HISTORY_KEY, JSON.stringify(h.slice(0, 100))); } catch (_) {}
-      renderHistory();
-    }
-    function renderHistory() {
-      const h = getHistory();
-      els.historyCount.textContent = h.length;
-      els.historyList.innerHTML = h.length ? '' : '<div class="clay-muted" style="font-size:12px">لا توجد ملفات مرفوعة بعد.</div>';
-      h.forEach(x => {
-        const r = document.createElement('div');
-        r.className = 'clay-tray history-row';
-        r.innerHTML = `<span class="n" title="${escapeHtml(x.url)}">${escapeHtml(x.name)} <span class="clay-muted">· ${fmtSize(x.size)} · ${new Date(x.t).toLocaleDateString('ar-SA')}</span></span>
-          <button class="clay-tile clay-tile--sm" data-act="copy">نسخ</button>
-          <button class="clay-tile clay-tile--sm" data-act="add">QR</button>`;
-        r.querySelector('[data-act="copy"]').addEventListener('click', () => copyText(x.url));
-        r.querySelector('[data-act="add"]').addEventListener('click', () => { appendLines(x.url); toast('أُضيف الرابط إلى القائمة'); });
-        els.historyList.appendChild(r);
-      });
-    }
-    function exportHistory() {
-      const blob = new Blob([JSON.stringify(getHistory(), null, 2)], { type: 'application/json' });
-      saveAs(blob, 'qr-files-history.json');
-    }
-
-    // ===== المعاينة =====
-    const debouncedPreview = debounce(updatePreview, 250);
-    function updatePreview() {
-      const first = getLines()[0];
-      if (!first) {
-        app.previewQR = null;
-        els.previewCanvas.innerHTML = `<div class="empty"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 0h2v2h-2zm4 0h3v2h-3zm-4 4h2v3h-2zm4 0h3v3h-3z"/></svg>أدخل البيانات لعرض المعاينة</div>`;
-        els.previewData.textContent = '—'; els.previewData.title = '';
-        return;
-      }
-      els.previewData.textContent = first.replace(/\n/g, ' ⏎ ');
-      els.previewData.title = first;
-      renderPreviewFor(first);
-    }
-    function renderPreviewFor(data) {
-      els.previewCanvas.innerHTML = '';
-      if (app.mode === 'qr') {
-        const qr = new QRCodeStyling({ ...qrOptions(), width: 240, height: 240, data });
-        qr.append(els.previewCanvas);
-        app.previewQR = qr;
-      } else {
-        app.previewQR = null;
-        els.previewCanvas.innerHTML = '<svg id="pvBc"></svg>';
-        try { JsBarcode('#pvBc', data, { format: app.barcodeFormat, ...barcodeOptions() }); }
-        catch (e) { els.previewCanvas.innerHTML = `<div class="err">بيانات غير صالحة لصيغة ${BARCODES[app.barcodeFormat].name}<br><small>${BARCODES[app.barcodeFormat].hint}</small></div>`; }
-      }
-    }
-
-    async function copyPreview(fmt) {
-      const first = getLines()[0];
-      if (!first) return toast('لا توجد بيانات للنسخ', 'muted');
-      try {
-        if (app.mode === 'qr') {
-          if (fmt === 'svg') { const b = await qrSvgBlob(first); await navigator.clipboard.writeText(await b.text()); }
-          else { const b = await qrPngBlob(first); await navigator.clipboard.write([new ClipboardItem({ 'image/png': b })]); }
-        } else {
-          const svg = els.previewCanvas.querySelector('svg'); if (!svg) return;
-          if (fmt === 'svg') await navigator.clipboard.writeText(new XMLSerializer().serializeToString(svg));
-          else await navigator.clipboard.write([new ClipboardItem({ 'image/png': await svgToPng(svg, 1000) })]);
-        }
-        toast(`تم نسخ ${fmt.toUpperCase()} إلى الحافظة`);
-      } catch (e) { console.error(e); toast('فشل النسخ، تحقق من أذونات الحافظة', 'danger'); }
-    }
-    async function downloadPreview() {
-      const first = getLines()[0];
-      if (!first) return toast('لا توجد بيانات للحفظ', 'muted');
-      const name = slug(titleOf(first));
-      if (app.mode === 'qr') saveAs(await qrPngBlob(first), name + '.png');
-      else { const svg = els.previewCanvas.querySelector('svg'); if (svg) saveAs(await svgToPng(svg, 1000), name + '.png'); }
-      toast('جارٍ التنزيل');
-    }
-
-    // ===== خيارات التوليد =====
-    function qrOptions() {
-      const gt = $('#optGradient').value;
-      const gradient = gt === 'none' ? null : { type: gt, rotation: 0, colorStops: [{ offset: 0, color: $('#optGrad1').value }, { offset: 1, color: $('#optGrad2').value }] };
-      const color = $('#optFG').value;
-      const paint = gradient ? { gradient } : { color };
-      const size = clamp(parseInt($('#optSize').value) || 512, 128, 2048);
-      return {
-        width: size, height: size, margin: clamp(parseInt($('#optMargin').value) || 0, 0, 64),
-        qrOptions: { errorCorrectionLevel: $('#optECC').value },
-        dotsOptions: { type: $('#optDots').value, ...paint },
-        cornersSquareOptions: { type: $('#optCorners').value, ...paint },
-        cornersDotOptions: { type: $('#optCorners').value === 'square' ? 'square' : 'dot', ...paint },
-        backgroundOptions: { color: $('#optBG').value },
-        image: app.logoDataUrl || undefined,
-        imageOptions: { hideBackgroundDots: $('#optHideBg').value === 'true', imageSize: clamp(parseInt($('#optLogoSize').value) || 22, 10, 40) / 100, margin: 6, crossOrigin: 'anonymous' }
-      };
-    }
-    function barcodeOptions() {
-      return {
-        width: parseFloat($('#bcWidth').value) || 2, height: parseInt($('#bcHeight').value) || 100,
-        displayValue: $('#bcDisplayValue').value === 'true', fontSize: parseInt($('#bcFontSize').value) || 16,
-        textAlign: $('#bcTextAlign').value, textPosition: $('#bcTextPosition').value,
-        lineColor: $('#bcLineColor').value, background: $('#bcBackground').value, margin: parseInt($('#bcMargin').value) || 0,
-        font: 'IBM Plex Sans Arabic, monospace'
-      };
-    }
-    function handleLogo(e) {
-      const f = e.target.files[0];
-      if (!f) { app.logoDataUrl = null; $('#logoBtnLabel').textContent = 'اختيار صورة'; debouncedPreview(); return; }
-      const r = new FileReader();
-      r.onload = ev => { app.logoDataUrl = ev.target.result; $('#logoBtnLabel').textContent = f.name.slice(0, 18); toast('تم تحميل الشعار'); debouncedPreview(); };
-      r.readAsDataURL(f);
-    }
-
-    // ===== التصدير =====
-    async function qrPngBlob(data) {
-      const o = qrOptions();
-      const size = Math.max(o.width, 1000);
-      const tmp = new QRCodeStyling({ ...o, width: size, height: size, data });
-      const holder = document.createElement('div');
-      holder.style.cssText = 'position:fixed;left:-9999px;top:-9999px;visibility:hidden';
-      document.body.appendChild(holder);
-      tmp.append(holder);
-      await new Promise(r => setTimeout(r, 120));
-      const blob = await tmp.getRawData('png');
-      holder.remove();
-      return blob;
-    }
-    async function qrSvgBlob(data) {
-      const tmp = new QRCodeStyling({ ...qrOptions(), data, type: 'svg' });
-      return await tmp.getRawData('svg');
-    }
-    function svgToPng(svgEl, minSize = 1000) {
-      return new Promise((resolve, reject) => {
-        const s = new XMLSerializer().serializeToString(svgEl);
-        const url = URL.createObjectURL(new Blob([s], { type: 'image/svg+xml;charset=utf-8' }));
-        const img = new Image();
-        img.onload = () => {
-          const w = img.naturalWidth || 300, h = img.naturalHeight || 150;
-          const scale = Math.max(minSize / Math.max(w, h), 2);
-          const c = document.createElement('canvas'); c.width = Math.round(w * scale); c.height = Math.round(h * scale);
-          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-          URL.revokeObjectURL(url);
-          c.toBlob(b => resolve(b), 'image/png');
+    function toPng(svg) {
+      return new Promise(function (resolve, reject) {
+        var img = new Image();
+        var url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
+        img.onload = function () {
+          var c = document.createElement('canvas'); c.width = 1000; c.height = 1000;
+          var ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 1000, 1000); ctx.drawImage(img, 0, 0, 1000, 1000);
+          URL.revokeObjectURL(url); c.toBlob(resolve, 'image/png');
         };
         img.onerror = reject; img.src = url;
       });
     }
 
-    // ===== التوليد =====
-    async function generateCodes(opts = {}) {
-      const lines = getLines();
-      if (!lines.length) return toast('لا توجد بيانات لتوليد الرموز', 'muted');
-      els.results.innerHTML = ''; app.items = [];
-      for (let i = 0; i < lines.length; i++) {
-        if (app.mode === 'qr') createQRCard(lines[i], i); else createBarcodeCard(lines[i], i);
-      }
-      els.downloadAllBtn.disabled = app.items.length === 0;
-      els.countBadge.style.display = ''; els.countBadge.textContent = `${app.items.length} رمز`;
-      if (!opts.silent) toast(`تم إنشاء ${app.items.length} رمز`);
+    function downloadAll() {
+      if (!items.length) return;
+      var zip = new JSZip(), svgF = zip.folder('SVG'), pngF = zip.folder('PNG');
+      Promise.all(items.map(function (it) {
+        svgF.file(it.name + '.svg', it.svg);
+        return toPng(it.svg).then(function (b) { pngF.file(it.name + '.png', b); });
+      })).then(function () { return zip.generateAsync({ type: 'blob' }); })
+        .then(function (blob) { saveAs(blob, 'QRCodes.zip'); toast('جارٍ تنزيل ملف ZIP'); });
     }
 
-    function cardShell(id, title, badge) {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.dataset.id = id;
-      card.innerHTML = `
-        <div class="card-head">
-          <span class="clay-badge clay-badge--grad">${escapeHtml(badge)}</span>
-          <span class="title" title="${escapeHtml(title)}">${escapeHtml(title)}</span>
-          <button class="clay-tile clay-tile--sm clay-tile--icon" data-act="remove" title="حذف"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-        </div>
-        <div class="paper" id="${id}"></div>
-        <div class="card-actions">
-          <button class="clay-tile clay-tile--sm" data-act="copy-png">نسخ PNG</button>
-          <button class="clay-tile clay-tile--sm" data-act="copy-svg">نسخ SVG</button>
-          <button class="clay-tile clay-tile--sm clay-tile--grad" data-act="dl-png">حفظ PNG</button>
-          <button class="clay-tile clay-tile--sm clay-tile--grad" data-act="dl-svg">حفظ SVG</button>
-        </div>`;
-      card.querySelector('[data-act="remove"]').addEventListener('click', () => removeItem(id));
-      card.querySelector('[data-act="copy-png"]').addEventListener('click', () => copyItem(id, 'png'));
-      card.querySelector('[data-act="copy-svg"]').addEventListener('click', () => copyItem(id, 'svg'));
-      card.querySelector('[data-act="dl-png"]').addEventListener('click', () => downloadItem(id, 'png'));
-      card.querySelector('[data-act="dl-svg"]').addEventListener('click', () => downloadItem(id, 'svg'));
-      card.style.animationDelay = `${Math.min(app.items.length * 40, 400)}ms`;
-      els.results.appendChild(card);
-      return card;
-    }
-    function createQRCard(data, i) {
-      const id = `qr-${Date.now()}-${i}`;
-      const title = titleOf(data);
-      cardShell(id, title, 'QR');
-      const inst = new QRCodeStyling({ ...qrOptions(), width: 260, height: 260, data });
-      inst.append(document.getElementById(id));
-      app.items.push({ id, kind: 'qr', data, title, instance: inst });
-    }
-    function createBarcodeCard(data, i) {
-      const id = `bc-${Date.now()}-${i}`;
-      const title = titleOf(data);
-      const card = cardShell(id, title, BARCODES[app.barcodeFormat].name);
-      const holder = document.getElementById(id);
-      holder.innerHTML = `<svg id="svg-${id}"></svg>`;
-      try {
-        JsBarcode(`#svg-${id}`, data, { format: app.barcodeFormat, ...barcodeOptions() });
-        app.items.push({ id, kind: 'barcode', data, title, format: app.barcodeFormat });
-      } catch (e) {
-        holder.innerHTML = `<div class="err">بيانات غير صالحة: ${escapeHtml(data)}</div>`;
-        card.querySelector('.card-actions').remove();
-      }
-    }
-    function removeItem(id) {
-      app.items = app.items.filter(x => x.id !== id);
-      const c = els.results.querySelector(`[data-id="${id}"]`); if (c) c.remove();
-      els.downloadAllBtn.disabled = app.items.length === 0;
-      els.countBadge.textContent = `${app.items.length} رمز`;
-      if (!app.items.length) els.countBadge.style.display = 'none';
-    }
-    async function itemBlob(item, fmt) {
-      if (item.kind === 'qr') return fmt === 'svg' ? await qrSvgBlob(item.data) : await qrPngBlob(item.data);
-      const svg = document.querySelector(`#${item.id} svg`);
-      if (!svg) return null;
-      if (fmt === 'svg') return new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml' });
-      return await svgToPng(svg, 1000);
-    }
-    async function copyItem(id, fmt) {
-      const item = app.items.find(x => x.id === id); if (!item) return;
-      try {
-        const b = await itemBlob(item, fmt);
-        if (fmt === 'svg') await navigator.clipboard.writeText(await b.text());
-        else await navigator.clipboard.write([new ClipboardItem({ 'image/png': b })]);
-        toast(`تم نسخ ${fmt.toUpperCase()}`);
-      } catch (e) { console.error(e); toast('فشل النسخ', 'danger'); }
-    }
-    async function downloadItem(id, fmt) {
-      const item = app.items.find(x => x.id === id); if (!item) return;
-      const b = await itemBlob(item, fmt); if (b) saveAs(b, `${slug(item.title)}.${fmt}`);
-    }
-    async function downloadAll() {
-      if (!app.items.length) return;
-      const zip = new JSZip(); const png = zip.folder('PNG'); const svg = zip.folder('SVG');
-      const used = {};
-      for (const item of app.items) {
-        let name = slug(item.title); if (used[name]) name += '-' + (++used[name]); else used[name] = 1;
-        const [p, s] = await Promise.all([itemBlob(item, 'png'), itemBlob(item, 'svg')]);
-        if (p) png.file(name + '.png', p); if (s) svg.file(name + '.svg', s);
-      }
-      saveAs(await zip.generateAsync({ type: 'blob' }), 'Codes.zip');
-      toast('جارٍ تنزيل ملف ZIP');
-    }
-    function clearAll() {
-      els.input.value = ''; updateLineNumbers(); els.results.innerHTML = ''; app.items = [];
-      els.downloadAllBtn.disabled = true; els.countBadge.style.display = 'none';
-      try { localStorage.removeItem(DRAFT_KEY); } catch (_) {}
-      updatePreview(); toast('تم مسح الكل', 'muted');
+    function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+    function fail() { toast('فشل النسخ، تحقق من أذونات الحافظة', 'danger'); }
+    function toast(msg, kind) {
+      var el = document.createElement('div');
+      el.className = 'clay-toast' + (kind === 'danger' ? ' clay-toast--danger' : '');
+      el.innerHTML = '<span class="clay-dot' + (kind === 'danger' ? ' clay-dot--danger' : '') + '"></span><span>' + esc(msg) + '</span>';
+      toasts.appendChild(el);
+      setTimeout(function () { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; setTimeout(function () { el.remove(); }, 320); }, 2600);
     }
 
-    // ===== القارئ =====
-    async function decodeFile(file) {
-      if (!file.type.startsWith('image/')) return toast('الملف ليس صورة', 'danger');
-      const url = URL.createObjectURL(file);
-      const r = await decodeImage(url);
-      if (r) addDecoded(r, url); else toast('لم يُعثر على رمز QR في الصورة', 'danger');
-    }
-    function decodeImage(url) {
-      return new Promise(resolve => {
-        const img = new Image();
-        img.onload = () => {
-          const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
-          const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0);
-          const d = ctx.getImageData(0, 0, c.width, c.height);
-          const code = jsQR(d.data, d.width, d.height);
-          resolve(code ? code.data : null);
-        };
-        img.onerror = () => resolve(null);
-        img.src = url;
-      });
-    }
-    function addDecoded(data, imgUrl) {
-      const isUrl = /^https?:\/\//i.test(data);
-      const item = document.createElement('div');
-      item.className = 'clay-tray dec-item';
-      item.innerHTML = `
-        <div class="dec-thumb"><img src="${imgUrl}" alt=""></div>
-        <div>
-          <div class="dec-text">${isUrl ? `<b>${escapeHtml(titleOf(data))}</b>` : ''}${escapeHtml(data)}</div>
-          <div class="row">
-            <button class="clay-tile clay-tile--sm" data-act="copy">نسخ</button>
-            <button class="clay-tile clay-tile--sm" data-act="add">إلى المولّد</button>
-            ${isUrl ? `<a class="clay-tile clay-tile--sm" href="${escapeHtml(data)}" target="_blank" rel="noopener">فتح</a>` : ''}
-          </div>
-        </div>`;
-      item.querySelector('[data-act="copy"]').addEventListener('click', () => copyText(data));
-      item.querySelector('[data-act="add"]').addEventListener('click', () => { appendLines(data); toast('أُضيف إلى المولّد'); });
-      els.decodeResults.prepend(item);
-      toast('تم فك التشفير بنجاح');
-    }
-    async function pasteFromClipboard() {
-      try {
-        if (navigator.clipboard.read) {
-          const items = await navigator.clipboard.read();
-          for (const it of items) for (const t of it.types) if (t.startsWith('image/')) {
-            const url = URL.createObjectURL(await it.getType(t));
-            const r = await decodeImage(url);
-            if (r) return addDecoded(r, url);
-          }
-        }
-        const text = await navigator.clipboard.readText();
-        if (text && text.trim()) { appendLines(text.trim()); toast('تم لصق النص في المولّد'); }
-        else toast('الحافظة لا تحتوي صورة أو نصًا', 'muted');
-      } catch (e) { toast('فشل اللصق، تحقق من الأذونات', 'danger'); }
-    }
-    async function toggleCamera() { if (app.scanning) stopCamera(); else await startCamera(); }
-    async function startCamera() {
-      try {
-        app.cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        els.video.srcObject = app.cameraStream; els.video.classList.add('active'); await els.video.play();
-        app.scanning = true; els.cameraBtn.textContent = 'إيقاف'; scanLoop(); toast('تم تشغيل الكاميرا، وجّهها نحو الرمز');
-      } catch (e) { toast('تعذّر تشغيل الكاميرا', 'danger'); }
-    }
-    function stopCamera() {
-      if (app.cameraStream) app.cameraStream.getTracks().forEach(t => t.stop());
-      app.cameraStream = null; els.video.srcObject = null; els.video.classList.remove('active');
-      app.scanning = false; els.cameraBtn.textContent = 'كاميرا';
-    }
-    function scanLoop() {
-      if (!app.scanning) return;
-      if (els.video.readyState === els.video.HAVE_ENOUGH_DATA) {
-        const c = document.createElement('canvas'); c.width = els.video.videoWidth; c.height = els.video.videoHeight;
-        const ctx = c.getContext('2d'); ctx.drawImage(els.video, 0, 0, c.width, c.height);
-        const d = ctx.getImageData(0, 0, c.width, c.height);
-        const code = jsQR(d.data, d.width, d.height);
-        if (code) { addDecoded(code.data, c.toDataURL()); stopCamera(); return; }
-      }
-      requestAnimationFrame(scanLoop);
-    }
-
-    // ===== اختصارات =====
-    function onKey(e) {
-      const tag = (document.activeElement && document.activeElement.tagName) || '';
-      const inField = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
-      if (e.key === 'Escape') { closeModal(els.helpModal); return; }
-      if ((e.key === '?' ) && !inField) { e.preventDefault(); openModal(els.helpModal); }
-      if (e.key.toLowerCase() === 'g' && !e.ctrlKey && !e.metaKey && !inField) toggleCamera();
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); generateCodes(); }
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (!els.downloadAllBtn.disabled) downloadAll(); }
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v' && !inField) { e.preventDefault(); pasteFromClipboard(); }
-    }
-
-    // ===== أدوات =====
-    function updateLineNumbers() {
-      const n = els.input.value.split('\n').length;
-      els.ln.textContent = Array.from({ length: n }, (_, i) => i + 1).join('\n');
-    }
-    function titleOf(data) {
-      const uploaded = getHistory().find(x => data.indexOf(x.url) === 0);
-      if (uploaded) return uploaded.name;
-      try { const u = new URL(data); if (/^https?:$/.test(u.protocol)) { const last = u.pathname.split('/').filter(Boolean).pop(); return u.hostname.replace(/^www\./, '') + (last && /\.[a-z0-9]{1,6}$/i.test(last) ? ' · ' + decodeURIComponent(last).slice(0, 24) : ''); } } catch (_) {}
-      if (/^WIFI:/i.test(data)) return 'Wi-Fi ' + ((/S:([^;]*)/.exec(data) || [])[1] || '');
-      if (/^BEGIN:VCARD/i.test(data)) return 'vCard ' + ((/FN:(.*)/.exec(data) || [])[1] || '');
-      if (/^BEGIN:VEVENT/i.test(data)) return 'حدث ' + ((/SUMMARY:(.*)/.exec(data) || [])[1] || '');
-      if (/^mailto:/i.test(data)) return 'بريد ' + data.slice(7).split('?')[0];
-      if (/^tel:/i.test(data)) return 'هاتف ' + data.slice(4);
-      if (/^SMSTO:/i.test(data)) return 'SMS ' + data.slice(6).split(':')[0];
-      if (/^geo:/i.test(data)) return 'موقع ' + data.slice(4).split('?')[0];
-      return data.replace(/\n/g, ' ').slice(0, 32) + (data.length > 32 ? '…' : '');
-    }
-    function slug(t) { return String(t).toLowerCase().replace(/[^\w؀-ۿ\s.-]/g, '').replace(/[\s_]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'code'; }
-    function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
-    function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
-    function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
-    async function copyText(t) { try { await navigator.clipboard.writeText(t); toast('تم النسخ'); } catch (_) { toast('فشل النسخ', 'danger'); } }
-    function toast(msg, kind = 'ok') {
-      const el = document.createElement('div');
-      el.className = 'clay-toast' + (kind === 'danger' ? ' clay-toast--danger' : kind === 'muted' ? ' clay-toast--muted' : '');
-      el.innerHTML = `<span class="clay-dot${kind === 'danger' ? ' clay-dot--danger' : kind === 'muted' ? ' clay-dot--muted' : ''}"></span><span>${escapeHtml(msg)}</span>`;
-      els.toasts.appendChild(el);
-      setTimeout(() => { el.style.transition = 'opacity .3s, transform .3s'; el.style.opacity = '0'; el.style.transform = 'translateY(10px)'; setTimeout(() => el.remove(), 320); }, 2800);
-    }
-    function openModal(m) { m.classList.add('show'); document.body.style.overflow = 'hidden'; }
-    function closeModal(m) { m.classList.remove('show'); document.body.style.overflow = ''; }
-    function checkFeatures() {
-      if (!(navigator.clipboard && (navigator.clipboard.read || navigator.clipboard.readText))) els.pasteBtn.style.display = 'none';
-      if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) els.cameraBtn.style.display = 'none';
-    }
-
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+    lines();
   })();
   </script>
+  <script src="switch.js" data-to="studio.html" data-label="الإصدار الكامل" data-sub="استوديو QR والباركود" data-kbd="V"></script>
 </body>
 </html>
