@@ -1,5 +1,5 @@
 {
- "name": "Clay QR Studio — مُنشئ رموز QR والباركود",
+ "name": "منشئ وقارئ رموز الاستجابة السريعة QR code",
  "icons": [
   {
    "src": "android-icon-36x36.png",
@@ -38,7 +38,7 @@
    "density": "4.0"
   }
  ],
- "short_name": "Clay QR",
+ "short_name": "منشئ وقارئ QR",
  "start_url": "./index.html",
  "display": "standalone",
  "background_color": "#10141D",
