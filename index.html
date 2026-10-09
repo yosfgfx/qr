@@ -84,10 +84,10 @@
     </header>
 
     <section class="clay-panel">
-      <label class="clay-label" for="url-input">ادخل الروابط هنا</label>
+      <label class="clay-label" for="url-input">ادخل الروابط هنا <span class="clay-muted" style="font-weight:500">· الكتابة بالإنجليزية تلقائيًا، واللصق كما هو</span></label>
       <div class="editor">
         <div class="ln" id="ln" aria-hidden="true">1</div>
-        <textarea id="url-input" class="clay-textarea" spellcheck="false" placeholder="example.com&#10;https://github.com/yosfgfx&#10;behance.net/yosfgfx"></textarea>
+        <textarea id="url-input" class="clay-textarea" lang="en" dir="ltr" inputmode="url" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="example.com&#10;https://github.com/yosfgfx&#10;behance.net/yosfgfx"></textarea>
       </div>
       <div class="bar">
         <span class="clay-badge" id="count" style="display:none"></span>
@@ -132,6 +132,59 @@
     var items = []; // {name, svg}
     var timer;
 
+    // ===== الكتابة بالكيبورد تُحوَّل إلى الإنجليزية (اللصق يبقى كما هو) =====
+    // 1) لوحة مفاتيح فعلية: نعتمد على e.code (المفتاح المادي) بغض النظر عن لغة اللوحة.
+    var CODE_MAP = { Minus: '-_', Equal: '=+', BracketLeft: '[{', BracketRight: ']}', Semicolon: ';:', Quote: "'\"", Backquote: '`~', Backslash: '\\|', Comma: ',<', Period: '.>', Slash: '/?', Space: '  ' };
+    var DIGIT_SHIFT = ')!@#$%^&*(';
+    function charFromCode(code, shift) {
+      var m;
+      if ((m = /^Key([A-Z])$/.exec(code))) return shift ? m[1] : m[1].toLowerCase();
+      if ((m = /^Digit([0-9])$/.exec(code))) return shift ? DIGIT_SHIFT[+m[1]] : m[1];
+      if ((m = /^Numpad([0-9])$/.exec(code))) return m[1];
+      if (CODE_MAP[code]) return CODE_MAP[code][shift ? 1 : 0];
+      return null;
+    }
+    // 2) لوحة افتراضية (جوال) بلا e.code: تحويل حروف تخطيط العربية 101 إلى نظيرها اللاتيني.
+    var AR_MAP = {
+      'ض':'q','ص':'w','ث':'e','ق':'r','ف':'t','غ':'y','ع':'u','ه':'i','خ':'o','ح':'p','ج':'[','د':']',
+      'ش':'a','س':'s','ي':'d','ب':'f','ل':'g','ا':'h','ت':'j','ن':'k','م':'l','ك':';','ط':"'",
+      'ئ':'z','ء':'x','ؤ':'c','ر':'v','لا':'b','ى':'n','ة':'m','و':',','ز':'.','ظ':'/','ذ':'`',
+      'َ':'Q','ً':'W','ُ':'E','ٌ':'R','لإ':'T','إ':'Y','÷':'I','×':'O','؛':'P','ِ':'A','ٍ':'S','لأ':'G','أ':'H','ـ':'J','،':'K',
+      'ْ':'X','لآ':'B','آ':'N','؟':'?','٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9',
+      '۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9'
+    };
+    function latinize(text) {
+      var out = '';
+      for (var i = 0; i < text.length; i++) {
+        var two = text.substr(i, 2);
+        if (AR_MAP[two] !== undefined) { out += AR_MAP[two]; i++; continue; }
+        var ch = text[i];
+        if (ch.charCodeAt(0) < 128) out += ch;
+        else if (AR_MAP[ch] !== undefined) out += AR_MAP[ch];
+        // أي حرف آخر غير لاتيني يُهمل
+      }
+      return out;
+    }
+    function insert(text) {
+      if (!document.execCommand || !document.execCommand('insertText', false, text)) {
+        var st = input.selectionStart, en = input.selectionEnd;
+        input.setRangeText(text, st, en, 'end');
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
+    input.addEventListener('keydown', function (e) {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+      if (e.key.length !== 1 || e.key.charCodeAt(0) < 128) return;    // حرف لاتيني أصلًا أو مفتاح تحكم
+      var ch = charFromCode(e.code, e.shiftKey);
+      if (ch === null) return;                                          // لا كود مادي: يعالجه beforeinput
+      e.preventDefault(); insert(ch);
+    });
+    input.addEventListener('beforeinput', function (e) {
+      if (e.inputType !== 'insertText' || !e.data) return;             // اللصق (insertFromPaste) وغيره يمر كما هو
+      if (!/[^\x00-\x7F]/.test(e.data)) return;
+      e.preventDefault();
+      var t = latinize(e.data); if (t) insert(t);
+    });
     input.addEventListener('input', function () { lines(); clearTimeout(timer); timer = setTimeout(generate, 180); });
     zipBtn.addEventListener('click', downloadAll);
     clearBtn.addEventListener('click', function () { input.value = ''; lines(); generate(); input.focus(); });
