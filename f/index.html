@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>فتح الملف…</title>
+  <meta name="theme-color" content="#10141D" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png" />
+  <link rel="stylesheet" href="../tokens.css" />
+  <script src="../theme.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { display: grid; place-items: center; min-height: 100vh; padding: 20px; }
+    .box { width: min(460px, 100%); text-align: center; }
+    .logo { position: relative; width: 72px; height: 72px; margin: 0 auto 16px; border-radius: 32%; background: linear-gradient(160deg, var(--bg) 0%, #121823 100%); box-shadow: var(--raise), var(--shadow-lg); display: grid; place-items: center; overflow: hidden; isolation: isolate; }
+    .logo .wave { position: absolute; inset: 12% 10% 18% 14%; z-index: -1; }
+    .logo svg { width: 30px; height: 30px; color: #fff; filter: drop-shadow(0 2px 2px rgba(0,0,0,.45)); }
+    h1 { margin: 6px 0 8px; font-size: 20px; font-weight: 800; }
+    p { margin: 0; line-height: 1.8; }
+    .spin { width: 28px; height: 28px; margin: 18px auto 0; border-radius: 50%; border: 3px solid var(--divider); border-top-color: var(--grad-b); animation: spin 1s linear infinite; }
+    html.is-error .spin { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #direct { display: inline-flex; margin-top: 18px; direction: ltr; max-width: 100%; }
+    .home { margin-top: 22px; font-size: 12px; }
+    @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+  </style>
+</head>
+<body class="clay-body">
+  <main class="clay-panel box">
+    <div class="logo" aria-hidden="true"><span class="wave clay-wave"></span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5M9 15l3 3 3-3M12 18v-7"/></svg>
+    </div>
+    <span class="clay-kicker">Clay QR Studio</span>
+    <h1 id="title">جارٍ فتح الملف…</h1>
+    <p id="text" class="clay-muted">لحظة واحدة.</p>
+    <div class="spin" aria-hidden="true"></div>
+    <a id="direct" class="clay-tile clay-tile--sm" href="#" style="display:none" rel="noopener">فتح الرابط المباشر</a>
+    <p class="home clay-muted"><a href="../">العودة إلى مُنشئ رموز QR</a></p>
+  </main>
+  <script src="../config.js"></script>
+  <script src="../storage.js"></script>
+  <script src="resolve.js"></script>
+</body>
+</html>

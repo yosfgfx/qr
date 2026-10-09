@@ -139,5 +139,39 @@
     };
   }
 
-  global.QRStorage = { putFile, publicUrl, isConfigured, sha256Hex };
+  /* ---------- الرابط المختصر (معادلة ثابتة، بلا قاعدة بيانات) ----------
+   * f/<hex24>.<ext>  ⇄  <shortBase>?<base64url(hex24)>.<ext>[!]
+   * 24 خانة ست عشرية = 12 بايت = 16 حرفًا base64url. العلامة ! في النهاية = تنزيل مباشر.
+   * صفحة f/ (resolve.js) تفك المعادلة وتفتح الملف من التخزين الحالي أو من المرايا.
+   */
+  function hexToB64url(hex) {
+    var bytes = hex.match(/../g).map(function (h) { return parseInt(h, 16); });
+    return btoa(String.fromCharCode.apply(null, bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function b64urlToHex(s) {
+    s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '=';
+    return Array.prototype.map.call(atob(s), function (c) { return c.charCodeAt(0).toString(16).padStart(2, '0'); }).join('');
+  }
+  function shortBase() {
+    var c = cfg();
+    if (c.shortBase) return c.shortBase;
+    if (/^https?:$/.test(location.protocol)) return new URL('f/', location.href).href;
+    return null;
+  }
+  // يحوّل مسار الكائن f/<hex>.<ext> إلى رابط مختصر؛ يعيد null إن لم تتوفر قاعدة (مثل فتح الملف محليًا)
+  function shortUrl(path, download) {
+    var base = shortBase(); if (!base) return null;
+    var m = /^(?:[^/]+\/)?([0-9a-f]{24,64})(?:\.([a-z0-9]{1,12}))?$/.exec(path); if (!m) return null;
+    var hex = m[1]; if (hex.length % 2) hex += '0';
+    return base + '?' + hexToB64url(hex) + (m[2] ? '.' + m[2] : '') + (download ? '!' : '');
+  }
+  // يفك الرابط المختصر (الجزء بعد ?) إلى {path, download}
+  function parseShortId(id) {
+    var m = /^([A-Za-z0-9_-]{16,88})(?:\.([a-z0-9]{1,12}))?(!)?$/.exec((id || '').trim()); if (!m) return null;
+    var hex; try { hex = b64urlToHex(m[1]); } catch (_) { return null; }
+    if (!/^[0-9a-f]{24,64}$/.test(hex)) return null;
+    return { hex: hex, ext: m[2] || '', path: (cfg().folder || 'f') + '/' + hex + (m[2] ? '.' + m[2] : ''), download: !!m[3] };
+  }
+
+  global.QRStorage = { putFile, publicUrl, shortUrl, parseShortId, shortBase, isConfigured, sha256Hex };
 })(window);

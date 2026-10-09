@@ -378,7 +378,7 @@
               <span class="clay-ic clay-ic--sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5M12 18v-6M9 15l3-3 3 3"/></svg></span>
               <div>
                 <h3 class="clay-h2">ملف → رابط دائم → QR</h3>
-                <div class="clay-muted" style="font-size:12px">يُرفع الملف إلى تخزين سحابي مجاني ويُحفظ باسم مشتق من بصمة محتواه، فلا يتغير رابطه أبدًا.</div>
+                <div class="clay-muted" style="font-size:12px">يُرفع الملف إلى تخزين سحابي مجاني ويُحفظ باسم مشتق من بصمة محتواه، ويُولَّد له رابط مختصر بمعادلة ثابتة يحوّل إلى الملف دائمًا، فالرمز يبقى بسيطًا ويعمل إلى الأبد.</div>
               </div>
             </div>
             <button class="clay-tile clay-tile--sm clay-tile--icon" id="closeFileBuilder" title="إغلاق">
@@ -1061,21 +1061,33 @@
           onStage: s => { stage.textContent = stages[s] || s; }
         });
         bar.style.width = '100%';
-        const url = els.fileForceDownload.checked ? r.downloadUrl : r.url;
+        const dl = els.fileForceDownload.checked;
+        const direct = dl ? r.downloadUrl : r.url;
+        const short = QRStorage.shortUrl(r.path, dl);
+        const url = short || direct;                     // الرمز يستخدم المختصر إن توفر
         row.querySelector('.progress').remove();
         row.querySelector('.meta').innerHTML = `
           <span class="clay-badge clay-badge--grad">${r.reused ? 'موجود مسبقًا، أُعيد استخدام الرابط' : 'تم الرفع'}</span>
-          <span class="clay-badge">SHA-256 · ${r.hash.slice(0, 12)}…</span>`;
+          <span class="clay-badge">SHA-256 · ${r.hash.slice(0, 12)}…</span>
+          ${short ? `<span class="clay-badge" title="الرابط المختصر يختصر الرمز ويحوّل إلى الملف الفعلي دائمًا">${url.length} حرفًا بدل ${direct.length}</span>` : ''}`;
         const link = document.createElement('div');
         link.className = 'link';
         link.innerHTML = `<span class="clay-pill" title="${escapeHtml(url)}">${escapeHtml(url)}</span>
           <button class="clay-tile clay-tile--sm" data-act="copy">نسخ</button>
-          <a class="clay-tile clay-tile--sm" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">فتح</a>`;
+          <a class="clay-tile clay-tile--sm" href="${escapeHtml(direct)}" target="_blank" rel="noopener">فتح</a>`;
         link.querySelector('[data-act="copy"]').addEventListener('click', () => copyText(url));
         row.appendChild(link);
-        addHistory({ name: file.name, size: file.size, url: r.url, hash: r.hash, t: Date.now() });
+        if (short) {
+          const alt = document.createElement('div');
+          alt.className = 'link';
+          alt.innerHTML = `<span class="clay-pill" title="${escapeHtml(direct)}" style="opacity:.75">${escapeHtml(direct)}</span>
+            <button class="clay-tile clay-tile--sm" data-act="copy-direct" title="نسخ الرابط المباشر للتخزين">نسخ المباشر</button>`;
+          alt.querySelector('[data-act="copy-direct"]').addEventListener('click', () => copyText(direct));
+          row.appendChild(alt);
+        }
+        addHistory({ name: file.name, size: file.size, url: r.url, short: short || '', hash: r.hash, t: Date.now() });
         appendLines(url);
-        toast(r.reused ? 'الملف موجود مسبقًا وأُضيف رابطه الدائم' : 'تم رفع الملف وإضافة رابطه الدائم');
+        toast(r.reused ? 'الملف موجود مسبقًا وأُضيف رابطه الدائم' : 'تم رفع الملف وأُضيف رابطه المختصر الدائم');
         await generateCodes({ silent: true });
       } catch (e) {
         console.error(e);
@@ -1112,8 +1124,8 @@
         r.innerHTML = `<span class="n" title="${escapeHtml(x.url)}">${escapeHtml(x.name)} <span class="clay-muted">· ${fmtSize(x.size)} · ${new Date(x.t).toLocaleDateString('ar-SA')}</span></span>
           <button class="clay-tile clay-tile--sm" data-act="copy">نسخ</button>
           <button class="clay-tile clay-tile--sm" data-act="add">QR</button>`;
-        r.querySelector('[data-act="copy"]').addEventListener('click', () => copyText(x.url));
-        r.querySelector('[data-act="add"]').addEventListener('click', () => { appendLines(x.url); toast('أُضيف الرابط إلى القائمة'); });
+        r.querySelector('[data-act="copy"]').addEventListener('click', () => copyText(x.short || x.url));
+        r.querySelector('[data-act="add"]').addEventListener('click', () => { appendLines(x.short || x.url); toast('أُضيف الرابط إلى القائمة'); });
         els.historyList.appendChild(r);
       });
     }
@@ -1449,7 +1461,7 @@
       els.ln.textContent = Array.from({ length: n }, (_, i) => i + 1).join('\n');
     }
     function titleOf(data) {
-      const uploaded = getHistory().find(x => data.indexOf(x.url) === 0);
+      const uploaded = getHistory().find(x => data.indexOf(x.url) === 0 || (x.short && data.indexOf(x.short) === 0));
       if (uploaded) return uploaded.name;
       try { const u = new URL(data); if (/^https?:$/.test(u.protocol)) { const last = u.pathname.split('/').filter(Boolean).pop(); return u.hostname.replace(/^www\./, '') + (last && /\.[a-z0-9]{1,6}$/i.test(last) ? ' · ' + decodeURIComponent(last).slice(0, 24) : ''); } } catch (_) {}
       if (/^WIFI:/i.test(data)) return 'Wi-Fi ' + ((/S:([^;]*)/.exec(data) || [])[1] || '');
