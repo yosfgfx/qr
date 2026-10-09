@@ -39,6 +39,12 @@
     .editor textarea { min-height: 150px; padding: 13px 14px 13px 52px; direction: ltr; text-align: left; font-family: var(--mono); font-size: 14px; font-weight: 500; }
 
     .bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+    .upload { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 12px; padding: 12px 14px; }
+    .upload .tx { flex: 1; min-width: 180px; font-size: 12.5px; line-height: 1.6; }
+    .upload .tx b { display: block; font-size: 13.5px; }
+    .progress { height: 12px; border-radius: 999px; background: var(--bg-deep); box-shadow: var(--press); overflow: hidden; width: 100%; }
+    .progress > i { display: block; height: 100%; width: 0; background: var(--grad); border-radius: 999px; box-shadow: var(--grad-raise); transition: width .2s var(--ease); }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
     .bar .spacer { flex: 1; }
 
     .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); margin-top: 22px; }
@@ -98,6 +104,13 @@
           تنزيل الكل ZIP
         </button>
       </div>
+      <div class="clay-tray upload" id="upload">
+        <span class="clay-ic clay-ic--sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5M12 18v-6M9 15l3-3 3 3"/></svg></span>
+        <span class="tx"><b>ملف → رابط دائم مختصر → QR</b><span class="clay-muted" id="upStatus">يُرفع إلى تخزين سحابي مجاني ويُحوَّل إلى رابط قصير ثابت لا يتغير أبدًا، حتى 25 MB.</span></span>
+        <label class="clay-tile clay-tile--sm clay-tile--grad" for="fileUpload">اختيار ملف</label>
+        <input type="file" id="fileUpload" class="sr-only" multiple>
+        <div class="progress" id="upProg" hidden><i></i></div>
+      </div>
       <div class="grid" id="qr-codes"></div>
     </section>
 
@@ -120,6 +133,8 @@
 
   <div class="toasts" id="toasts" aria-live="polite"></div>
 
+  <script src="config.js"></script>
+  <script src="storage.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -201,7 +216,12 @@
     function lines() { ln.textContent = input.value.split('\n').map(function (_, i) { return i + 1; }).join('\n'); }
 
     function validUrl(s) { try { new URL(s); return s; } catch (_) { return 'https://' + s; } }
-    function nameOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (_) { return 'qr'; } }
+    var HISTORY_KEY = 'qr-file-history-v1';   // نفس سجل الاستوديو
+    function history() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch (_) { return []; } }
+    function nameOf(u) {
+      var h = history(); for (var i = 0; i < h.length; i++) { if (u.indexOf(h[i].url) === 0 || (h[i].short && u.indexOf(h[i].short) === 0)) return h[i].name.replace(/\.[^.]+$/, ''); }
+      try { return new URL(u).hostname.replace(/^www\./, ''); } catch (_) { return 'qr'; }
+    }
 
     function generate() {
       var raw = input.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
@@ -258,6 +278,37 @@
       toasts.appendChild(el);
       setTimeout(function () { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; setTimeout(function () { el.remove(); }, 320); }, 2600);
     }
+
+    // ===== رفع ملف → رابط دائم مختصر → QR =====
+    var fileInput = document.getElementById('fileUpload'), upStatus = document.getElementById('upStatus'), upProg = document.getElementById('upProg'), upBar = upProg.querySelector('i');
+    if (!(window.QRStorage && QRStorage.isConfigured())) { document.getElementById('upload').hidden = true; }
+    fileInput.addEventListener('change', function () {
+      var files = Array.prototype.slice.call(fileInput.files); fileInput.value = '';
+      (function next(i) {
+        if (i >= files.length) { upProg.hidden = true; return; }
+        var f = files[i];
+        upProg.hidden = false; upBar.style.width = '0';
+        upStatus.textContent = 'جارٍ معالجة ' + f.name + '…';
+        QRStorage.putFile(f, {
+          onProgress: function (p) { upBar.style.width = Math.round(p * 100) + '%'; },
+          onStage: function (st) { upStatus.textContent = ({ hash: 'جارٍ حساب بصمة ', check: 'جارٍ التحقق من ', upload: 'جارٍ رفع ', done: 'اكتمل ' })[st] + f.name; }
+        }).then(function (r) {
+          var short = QRStorage.shortUrl(r.path, false) || r.url;
+          var h = history().filter(function (x) { return x.url !== r.url; });
+          h.unshift({ name: f.name, size: f.size, url: r.url, short: short, hash: r.hash, t: Date.now() });
+          try { localStorage.setItem(HISTORY_KEY, JSON.stringify(h.slice(0, 100))); } catch (_) {}
+          input.value = (input.value.trim() ? input.value.replace(/\s+$/, '') + '\n' : '') + short;
+          lines(); generate();
+          upStatus.textContent = (r.reused ? 'موجود مسبقًا، أُعيد استخدام الرابط: ' : 'تم الرفع: ') + f.name;
+          toast((r.reused ? 'الملف موجود مسبقًا' : 'تم رفع الملف') + ' وأُضيف رابطه المختصر كرمز');
+          next(i + 1);
+        }).catch(function (e) {
+          upStatus.textContent = 'فشل رفع ' + f.name + ': ' + (e.message || '');
+          toast('فشل رفع الملف: ' + (e.message || ''), 'danger');
+          next(i + 1);
+        });
+      })(0);
+    });
 
     lines();
   })();
