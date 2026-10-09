@@ -23,7 +23,7 @@
     *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html { scroll-behavior: smooth; }
     body { padding: 0; }
-    .page { max-width: 1320px; margin: 0 auto; padding: clamp(14px, 3vw, 28px) clamp(14px, 3vw, 28px) 80px; }
+    .page { max-width: 1360px; margin: 0 auto; padding: clamp(18px, 4vw, 44px) clamp(18px, 4vw, 44px) 80px; }
 
     /* ---------- الترويسة ---------- */
     .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
@@ -37,8 +37,11 @@
 
     /* ---------- الشبكة ---------- */
     .layout { display: grid; gap: 22px; grid-template-columns: minmax(0, 1.25fr) minmax(320px, .85fr); align-items: start; }
+    .layout > .dev-wrap { grid-column: 1 / -1; }
+    .layout > * { min-width: 0; }
+    .side > * { min-width: 0; }
     @media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } }
-    .side { display: grid; gap: 22px; position: sticky; top: 18px; }
+    .side { display: grid; gap: 22px; position: sticky; top: 24px; }
     @media (max-width: 1024px) { .side { position: static; } }
 
     .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
@@ -107,6 +110,28 @@
     details.opts > summary .chev { transition: transform .3s var(--ease-bounce); }
     details.opts[open] > summary .chev { transform: rotate(180deg); }
     .opts-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); margin-top: 14px; }
+    .opt-section { margin-top: 16px; }
+    .opt-title { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: var(--text-2); }
+    .opt-title small { font-weight: 500; opacity: .8; }
+    .opt-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 640px) { .opt-row2 { grid-template-columns: 1fr; } }
+    .pick { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pick__item { width: 50px; height: 50px; padding: 0; border: 0; border-radius: 15px; background: var(--bg-deep); color: var(--text-2); box-shadow: var(--raise-sm); cursor: pointer; display: grid; place-items: center; transition: transform .25s var(--ease-bounce), background .2s var(--ease), color .2s, box-shadow .2s; }
+    .pick__item svg { width: 28px; height: 28px; display: block; }
+    .pick__item:hover { color: var(--text); background: var(--surface); transform: translateY(-2px); }
+    .pick__item:active { box-shadow: var(--press); transform: none; }
+    .pick__item:focus-visible { outline: 2px solid var(--grad-b); outline-offset: 2px; }
+    .pick__item.is-active { background: var(--grad); color: #fff; box-shadow: var(--grad-raise); transform: none; }
+    .pick__item.is-active svg { filter: drop-shadow(0 1px 1px rgba(0,40,20,.35)); }
+    .pick__item.is-active .gl { --g1: #fff; --g2: rgba(255,255,255,.35); }
+    .grad-only { display: none; }
+    #qrOpts.has-grad .grad-only { display: flex; }
+    details.sub { margin-top: 16px; }
+    details.sub > summary { list-style: none; cursor: pointer; display: inline-flex; gap: 8px; }
+    details.sub > summary::-webkit-details-marker { display: none; }
+    details.sub > summary .chev { transition: transform .3s var(--ease-bounce); }
+    details.sub[open] > summary .chev { transform: rotate(180deg); }
+    .ecc-note { margin: 10px 0 0; font-size: 11.5px; }
     .file-input { position: relative; }
     .file-input input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
@@ -129,10 +154,12 @@
     .paper .empty svg { width: 46px; height: 46px; opacity: .25; display: block; margin: 0 auto 8px; }
     .paper .err { color: var(--danger); font-size: 13px; text-align: center; }
     .preview-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
-    .preview-data { margin-top: 12px; }
+    .preview-data { margin-top: 12px; display: block; width: 100%; }
+    .upload-item .link .clay-pill, .history-row .n { min-width: 0; display: block; }
 
     /* ---------- بطاقات النتائج ---------- */
-    .results { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); margin-top: 18px; }
+    .results { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr)); margin-top: 18px; }
+    .results > .card { min-width: 0; }
     .card { padding: 14px; border-radius: 22px; background: var(--surface); box-shadow: var(--raise); animation: pop .4s var(--ease-bounce) both; }
     @keyframes pop { from { transform: scale(.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
@@ -152,7 +179,7 @@
     .dec-text b { display: block; margin-bottom: 2px; }
 
     /* ---------- بطاقة المطور ---------- */
-    .dev-wrap { margin-top: 26px; display: grid; grid-template-columns: minmax(0, 1fr); }
+    .dev-wrap { margin-top: 6px; display: grid; grid-template-columns: minmax(0, 1fr); }
     .dev { position: relative; border-radius: 28px; overflow: hidden; background: linear-gradient(160deg, var(--surface) 0%, var(--bg) 100%); box-shadow: inset 1px 1px 0 rgba(255,255,255,.06), 0 16px 40px rgba(0,0,0,.5); display: grid; grid-template-columns: minmax(260px, 380px) minmax(0, 1fr); }
     .dev-photo { position: relative; min-height: 300px; overflow: hidden; background: var(--bg-deep); }
     .dev-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; }
@@ -463,26 +490,46 @@
             <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
 
-          <div id="qrOpts" class="opts-grid">
-            <div class="field"><label>الحجم (px)</label><input type="number" class="clay-input" id="optSize" min="128" max="2048" value="512"></div>
-            <div class="field"><label>الهامش</label><input type="number" class="clay-input" id="optMargin" min="0" max="64" value="12"></div>
-            <div class="field"><label>تصحيح الأخطاء</label>
-              <select class="clay-select" id="optECC"><option value="L">منخفض (L)</option><option value="M" selected>متوسط (M)</option><option value="Q">عالٍ (Q)</option><option value="H">الأعلى (H)</option></select></div>
-            <div class="field"><label>نمط النقاط</label>
-              <select class="clay-select" id="optDots"><option value="square">مربع</option><option value="dots">نقاط</option><option value="rounded" selected>دائري</option><option value="classy">كلاسيكي</option><option value="classy-rounded">كلاسيكي دائري</option><option value="extra-rounded">دائري جدًا</option></select></div>
-            <div class="field"><label>نمط الزوايا</label>
-              <select class="clay-select" id="optCorners"><option value="square">مربع</option><option value="dot">دائري</option><option value="extra-rounded" selected>ناعم</option></select></div>
-            <div class="field"><label>اللون الأمامي</label><input type="color" class="clay-color" id="optFG" value="#10141D"></div>
-            <div class="field"><label>لون الخلفية</label><input type="color" class="clay-color" id="optBG" value="#ffffff"></div>
-            <div class="field"><label>التدرج</label>
-              <select class="clay-select" id="optGradient"><option value="none" selected>بدون</option><option value="linear">خطي</option><option value="radial">دائري</option></select></div>
-            <div class="field"><label>لون التدرج 1</label><input type="color" class="clay-color" id="optGrad1" value="#4EE34B"></div>
-            <div class="field"><label>لون التدرج 2</label><input type="color" class="clay-color" id="optGrad2" value="#10CCA4"></div>
-            <div class="field"><label>الشعار في المنتصف</label>
-              <div class="file-input"><button class="clay-tile clay-tile--block clay-tile--sm" type="button" id="logoBtnLabel">اختيار صورة</button><input type="file" id="optLogo" accept="image/*"></div></div>
-            <div class="field"><label>حجم الشعار %</label><input type="number" class="clay-input" id="optLogoSize" min="10" max="40" value="22"></div>
-            <div class="field"><label>إخفاء النقاط خلف الشعار</label>
-              <select class="clay-select" id="optHideBg"><option value="true" selected>نعم</option><option value="false">لا</option></select></div>
+          <div id="qrOpts">
+            <div class="opt-section">
+              <span class="opt-title">نمط النقاط</span>
+              <div class="pick" data-for="optDots" role="radiogroup" aria-label="نمط النقاط"><button type="button" class="pick__item" data-value="square" title="مربع" aria-label="مربع" role="radio"><svg viewBox="0 0 24 24" fill="currentColor" ><rect x="2" y="2" width="6" height="6"/><rect x="9" y="2" width="6" height="6"/><rect x="16" y="2" width="6" height="6"/><rect x="2" y="9" width="6" height="6"/><rect x="9" y="9" width="6" height="6"/><rect x="16" y="9" width="6" height="6"/><rect x="2" y="16" width="6" height="6"/><rect x="9" y="16" width="6" height="6"/><rect x="16" y="16" width="6" height="6"/></svg></button><button type="button" class="pick__item" data-value="dots" title="نقاط" aria-label="نقاط" role="radio"><svg viewBox="0 0 24 24" fill="currentColor" ><circle cx="5" cy="5" r="3"/><circle cx="12" cy="5" r="3"/><circle cx="19" cy="5" r="3"/><circle cx="5" cy="12" r="3"/><circle cx="12" cy="12" r="3"/><circle cx="19" cy="12" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="12" cy="19" r="3"/><circle cx="19" cy="19" r="3"/></svg></button><button type="button" class="pick__item" data-value="rounded" title="دائري" aria-label="دائري" role="radio"><svg viewBox="0 0 24 24" fill="currentColor" ><rect x="2" y="2" width="6" height="6" rx="2"/><rect x="9" y="2" width="6" height="6" rx="2"/><rect x="16" y="2" width="6" height="6" rx="2"/><rect x="2" y="9" width="6" height="6" rx="2"/><rect x="9" y="9" width="6" height="6" rx="2"/><rect x="16" y="9" width="6" height="6" rx="2"/><rect x="2" y="16" width="6" height="6" rx="2"/><rect x="9" y="16" width="6" height="6" rx="2"/><rect x="16" y="16" width="6" height="6" rx="2"/></svg></button><button type="button" class="pick__item" data-value="classy" title="كلاسيكي" aria-label="كلاسيكي" role="radio"><svg viewBox="0 0 24 24" fill="currentColor" ><path d="M2,5A3,3 0 0 1 5,2H8V5A3,3 0 0 1 5,8H2Z"/><path d="M9,5A3,3 0 0 1 12,2H15V5A3,3 0 0 1 12,8H9Z"/><path d="M16,5A3,3 0 0 1 19,2H22V5A3,3 0 0 1 19,8H16Z"/><path d="M2,12A3,3 0 0 1 5,9H8V12A3,3 0 0 1 5,15H2Z"/><path d="M9,12A3,3 0 0 1 12,9H15V12A3,3 0 0 1 12,15H9Z"/><path d="M16,12A3,3 0 0 1 19,9H22V12A3,3 0 0 1 19,15H16Z"/><path d="M2,19A3,3 0 0 1 5,16H8V19A3,3 0 0 1 5,22H2Z"/><path d="M9,19A3,3 0 0 1 12,16H15V19A3,3 0 0 1 12,22H9Z"/><path d="M16,19A3,3 0 0 1 19,16H22V19A3,3 0 0 1 19,22H16Z"/></svg></button><button type="button" class="pick__item" data-value="classy-rounded" title="كلاسيكي دائري" aria-label="كلاسيكي دائري" role="radio"><svg viewBox="0 0 24 24" fill="currentColor" ><path d="M2,5A3,3 0 0 1 5,2H7A1,1 0 0 1 8,3V5A3,3 0 0 1 5,8H3A1,1 0 0 1 2,7Z"/><path d="M9,5A3,3 0 0 1 12,2H14A1,1 0 0 1 15,3V5A3,3 0 0 1 12,8H10A1,1 0 0 1 9,7Z"/><path d="M16,5A3,3 0 0 1 19,2H21A1,1 0 0 1 22,3V5A3,3 0 0 1 19,8H17A1,1 0 0 1 16,7Z"/><path d="M2,12A3,3 0 0 1 5,9H7A1,1 0 0 1 8,10V12A3,3 0 0 1 5,15H3A1,1 0 0 1 2,14Z"/><path d="M9,12A3,3 0 0 1 12,9H14A1,1 0 0 1 15,10V12A3,3 0 0 1 12,15H10A1,1 0 0 1 9,14Z"/><path d="M16,12A3,3 0 0 1 19,9H21A1,1 0 0 1 22,10V12A3,3 0 0 1 19,15H17A1,1 0 0 1 16,14Z"/><path d="M2,19A3,3 0 0 1 5,16H7A1,1 0 0 1 8,17V19A3,3 0 0 1 5,22H3A1,1 0 0 1 2,21Z"/><path d="M9,19A3,3 0 0 1 12,16H14A1,1 0 0 1 15,17V19A3,3 0 0 1 12,22H10A1,1 0 0 1 9,21Z"/><path d="M16,19A3,3 0 0 1 19,16H21A1,1 0 0 1 22,17V19A3,3 0 0 1 19,22H17A1,1 0 0 1 16,21Z"/></svg></button><button type="button" class="pick__item" data-value="extra-rounded" title="دائري جدًا" aria-label="دائري جدًا" role="radio"><svg viewBox="0 0 24 24" fill="currentColor" ><rect x="2" y="2" width="20" height="6" rx="3"/><rect x="2" y="9" width="6" height="13" rx="3"/><rect x="16" y="9" width="6" height="6" rx="3"/><rect x="9" y="16" width="13" height="6" rx="3"/><rect x="9" y="9" width="6" height="6" rx="3"/></svg></button></div>
+              <input type="hidden" id="optDots" value="rounded">
+            </div>
+            <div class="opt-row2">
+              <div class="opt-section">
+                <span class="opt-title">نمط الزوايا</span>
+                <div class="pick" data-for="optCorners" role="radiogroup" aria-label="نمط الزوايا"><button type="button" class="pick__item" data-value="square" title="مربع" aria-label="مربع" role="radio"><svg viewBox="0 0 24 24" fill="currentColor" ><rect x="3" y="3" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3"/><rect x="8" y="8" width="8" height="8"/></svg></button><button type="button" class="pick__item" data-value="dot" title="دائري" aria-label="دائري" role="radio"><svg viewBox="0 0 24 24" fill="currentColor" ><rect x="3" y="3" width="18" height="18" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="12" cy="12" r="4"/></svg></button><button type="button" class="pick__item" data-value="extra-rounded" title="ناعم" aria-label="ناعم" role="radio"><svg viewBox="0 0 24 24" fill="currentColor" ><rect x="3" y="3" width="18" height="18" rx="8" fill="none" stroke="currentColor" stroke-width="3"/><rect x="8" y="8" width="8" height="8" rx="3"/></svg></button></div>
+                <input type="hidden" id="optCorners" value="extra-rounded">
+              </div>
+              <div class="opt-section">
+                <span class="opt-title">التلوين</span>
+                <div class="pick" data-for="optGradient" role="radiogroup" aria-label="التلوين"><button type="button" class="pick__item" data-value="none" title="لون واحد" aria-label="لون واحد" role="radio"><svg viewBox="0 0 24 24" fill="currentColor" ><rect x="3" y="3" width="18" height="18" rx="5"/></svg></button><button type="button" class="pick__item" data-value="linear" title="تدرج خطي" aria-label="تدرج خطي" role="radio"><svg viewBox="0 0 24 24" fill="currentColor" ><defs><linearGradient id="pgl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--g1,#4EE34B)"/><stop offset="1" stop-color="var(--g2,#10CCA4)"/></linearGradient></defs><rect class="gl" x="3" y="3" width="18" height="18" rx="5" fill="url(#pgl)"/></svg></button><button type="button" class="pick__item" data-value="radial" title="تدرج دائري" aria-label="تدرج دائري" role="radio"><svg viewBox="0 0 24 24" fill="currentColor" ><defs><radialGradient id="pgr" cx=".35" cy=".35" r=".8"><stop offset="0" stop-color="var(--g1,#CEF04C)"/><stop offset="1" stop-color="var(--g2,#10CCA4)"/></radialGradient></defs><rect class="gl" x="3" y="3" width="18" height="18" rx="5" fill="url(#pgr)"/></svg></button></div>
+                <input type="hidden" id="optGradient" value="none">
+              </div>
+            </div>
+            <div class="opts-grid">
+              <div class="field"><label>اللون الأمامي</label><input type="color" class="clay-color" id="optFG" value="#10141D"></div>
+              <div class="field"><label>لون الخلفية</label><input type="color" class="clay-color" id="optBG" value="#ffffff"></div>
+              <div class="field grad-only"><label>لون التدرج 1</label><input type="color" class="clay-color" id="optGrad1" value="#4EE34B"></div>
+              <div class="field grad-only"><label>لون التدرج 2</label><input type="color" class="clay-color" id="optGrad2" value="#10CCA4"></div>
+              <div class="field"><label>الشعار في المنتصف</label>
+                <div class="file-input"><button class="clay-tile clay-tile--block clay-tile--sm" type="button" id="logoBtnLabel">اختيار صورة</button><input type="file" id="optLogo" accept="image/*"></div></div>
+              <div class="field"><label>حجم الشعار %</label><input type="number" class="clay-input" id="optLogoSize" min="10" max="40" value="22"></div>
+            </div>
+            <p class="ecc-note clay-muted" id="eccNote">تصحيح الأخطاء يُضبط تلقائيًا: الأعلى مع الشعار، وبحسب طول البيانات بدونه.</p>
+            <details class="sub" id="advOpts">
+              <summary class="clay-tile clay-tile--sm">
+                <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                خيارات متقدمة
+              </summary>
+              <div class="opts-grid">
+                <div class="field"><label>الحجم (px)</label><input type="number" class="clay-input" id="optSize" min="128" max="2048" value="512"></div>
+                <div class="field"><label>الهامش</label><input type="number" class="clay-input" id="optMargin" min="0" max="64" value="12"></div>
+                <div class="field"><label>إخفاء النقاط خلف الشعار</label>
+                  <select class="clay-select" id="optHideBg"><option value="true" selected>نعم</option><option value="false">لا</option></select></div>
+              </div>
+            </details>
           </div>
 
           <div id="bcOpts" class="opts-grid" style="display:none">
@@ -572,7 +619,6 @@
           <div class="dec-list" id="decodeResults"></div>
         </section>
       </aside>
-    </div>
 
     <!-- ===== بطاقة المطور ===== -->
     <section class="dev-wrap" id="developer" aria-labelledby="devName">
@@ -615,6 +661,7 @@
         </div>
       </div>
     </section>
+    </div>
 
     <footer class="foot-bar">
       <span class="clay-kicker">الإصدار الذي تستخدمه</span>
@@ -869,6 +916,18 @@
       });
       $('#optLogo').addEventListener('change', handleLogo);
 
+      // منتقيات الأيقونات (نمط النقاط، الزوايا، التلوين) تكتب في حقول مخفية
+      $$('.pick').forEach(pick => {
+        const input = $('#' + pick.dataset.for);
+        pick.addEventListener('click', e => {
+          const btn = e.target.closest('.pick__item'); if (!btn) return;
+          input.value = btn.dataset.value;
+          syncPickers();
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+      });
+      syncPickers();
+
       // المعاينة
       $('#copyPreviewPng').addEventListener('click', () => copyPreview('png'));
       $('#copyPreviewSvg').addEventListener('click', () => copyPreview('svg'));
@@ -897,7 +956,7 @@
     const SETTINGS_KEY = 'qr-app-settings-v4';
     const DRAFT_KEY = 'qr-app-draft-v4';
     const HISTORY_KEY = 'qr-file-history-v1';
-    const FIELD_IDS = ['optSize', 'optMargin', 'optECC', 'optDots', 'optCorners', 'optFG', 'optBG', 'optGradient', 'optGrad1', 'optGrad2', 'optLogoSize', 'optHideBg',
+    const FIELD_IDS = ['optSize', 'optMargin', 'optDots', 'optCorners', 'optFG', 'optBG', 'optGradient', 'optGrad1', 'optGrad2', 'optLogoSize', 'optHideBg',
       'bcWidth', 'bcHeight', 'bcDisplayValue', 'bcFontSize', 'bcTextAlign', 'bcTextPosition', 'bcLineColor', 'bcBackground', 'bcMargin'];
 
     function saveSettings() {
@@ -921,6 +980,14 @@
         const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
         if (d && d.v && Date.now() - d.t < 7 * 86400000) { els.input.value = d.v; updateLineNumbers(); }
       } catch (_) {}
+    }
+
+    function syncPickers() {
+      $$('.pick').forEach(pick => {
+        const v = $('#' + pick.dataset.for).value;
+        pick.querySelectorAll('.pick__item').forEach(b => { const on = b.dataset.value === v; b.classList.toggle('is-active', on); b.setAttribute('aria-checked', on); });
+      });
+      els.qrOpts.classList.toggle('has-grad', $('#optGradient').value !== 'none');
     }
 
     // ===== الوضع والنوع =====
@@ -1151,7 +1218,7 @@
     function renderPreviewFor(data) {
       els.previewCanvas.innerHTML = '';
       if (app.mode === 'qr') {
-        const qr = new QRCodeStyling({ ...qrOptions(), width: 240, height: 240, data });
+        const qr = new QRCodeStyling({ ...qrOptions(data), width: 240, height: 240, data });
         qr.append(els.previewCanvas);
         app.previewQR = qr;
       } else {
@@ -1187,7 +1254,13 @@
     }
 
     // ===== خيارات التوليد =====
-    function qrOptions() {
+    // تصحيح الأخطاء الذكي: الأعلى مع الشعار (ليبقى الرمز مقروءًا)، وبحسب طول البيانات بدونه
+    function eccFor(data) {
+      if (app.logoDataUrl) return 'H';
+      const n = (data || '').length;
+      return n <= 80 ? 'Q' : n <= 300 ? 'M' : 'L';
+    }
+    function qrOptions(data) {
       const gt = $('#optGradient').value;
       const gradient = gt === 'none' ? null : { type: gt, rotation: 0, colorStops: [{ offset: 0, color: $('#optGrad1').value }, { offset: 1, color: $('#optGrad2').value }] };
       const color = $('#optFG').value;
@@ -1195,7 +1268,7 @@
       const size = clamp(parseInt($('#optSize').value) || 512, 128, 2048);
       return {
         width: size, height: size, margin: clamp(parseInt($('#optMargin').value) || 0, 0, 64),
-        qrOptions: { errorCorrectionLevel: $('#optECC').value },
+        qrOptions: { errorCorrectionLevel: eccFor(data) },
         dotsOptions: { type: $('#optDots').value, ...paint },
         cornersSquareOptions: { type: $('#optCorners').value, ...paint },
         cornersDotOptions: { type: $('#optCorners').value === 'square' ? 'square' : 'dot', ...paint },
@@ -1223,7 +1296,7 @@
 
     // ===== التصدير =====
     async function qrPngBlob(data) {
-      const o = qrOptions();
+      const o = qrOptions(data);
       const size = Math.max(o.width, 1000);
       const tmp = new QRCodeStyling({ ...o, width: size, height: size, data });
       const holder = document.createElement('div');
@@ -1236,7 +1309,7 @@
       return blob;
     }
     async function qrSvgBlob(data) {
-      const tmp = new QRCodeStyling({ ...qrOptions(), data, type: 'svg' });
+      const tmp = new QRCodeStyling({ ...qrOptions(data), data, type: 'svg' });
       return await tmp.getRawData('svg');
     }
     function svgToPng(svgEl, minSize = 1000) {
@@ -1299,7 +1372,7 @@
       const id = `qr-${Date.now()}-${i}`;
       const title = titleOf(data);
       cardShell(id, title, 'QR');
-      const inst = new QRCodeStyling({ ...qrOptions(), width: 260, height: 260, data });
+      const inst = new QRCodeStyling({ ...qrOptions(data), width: 260, height: 260, data });
       inst.append(document.getElementById(id));
       app.items.push({ id, kind: 'qr', data, title, instance: inst });
     }
