@@ -1,46 +1,59 @@
 /*
  * switch.js — مبدّل الإصدارين (الخفيف ⇄ الاستوديو الكامل).
- * يُدرج زرًا عائمًا بأسلوب Clay في الصفحة ويقوم بانتقال سلس بين الصفحتين.
+ * يملأ كل عنصر يحمل data-ver-switch بشريحة مقسّمة تُظهر الإصدار الحالي مضاءً
+ * والإصدار الآخر قابلًا للنقر، مع انتقال سلس بين الصفحتين (Alt+V للتبديل).
  *
  * الاستخدام:
- *   <script src="switch.js" data-to="studio.html" data-label="الإصدار الكامل" data-sub="استوديو QR والباركود" data-kbd="V"></script>
+ *   <div data-ver-switch></div>  ... في الترويسة
+ *   <script src="switch.js" data-current="lite|studio" data-kbd="V"></script>
  */
 (function () {
   'use strict';
   var s = document.currentScript; if (!s) return;
-  var to = s.dataset.to, label = s.dataset.label || 'الإصدار الآخر', sub = s.dataset.sub || '', kbd = (s.dataset.kbd || 'V').toUpperCase();
-  if (!to) return;
+  var current = s.dataset.current === 'studio' ? 'studio' : 'lite';
+  var kbd = (s.dataset.kbd || 'V').toUpperCase();
+  var VERSIONS = {
+    lite:   { href: 'index.html',  label: 'الخفيف', title: 'الإصدار الخفيف: روابط → QR فقط',
+              icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 4 14h7l-1 7 9-11h-7l1-7z"/></svg>' },
+    studio: { href: 'studio.html', label: 'الكامل', title: 'الإصدار الكامل: الاستوديو بكل المزايا',
+              icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg>' }
+  };
+  var other = current === 'lite' ? 'studio' : 'lite';
 
   function build() {
-    var a = document.createElement('a');
-    a.className = 'ver-switch';
-    a.href = to;
-    a.setAttribute('aria-label', 'الانتقال إلى ' + label);
-    a.title = label + ' (Alt+' + kbd + ')';
-    a.innerHTML =
-      '<span class="ver-switch__ic"><span class="ver-switch__wave"></span>' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg></span>' +
-      '<span class="ver-switch__tx"><b>' + label + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>' +
-      '<span class="ver-switch__kbd">Alt+' + kbd + '</span>';
-    a.addEventListener('click', go);
-    document.body.appendChild(a);
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ver-switch]'), function (host) {
+      var seg = document.createElement('nav');
+      seg.className = 'ver-seg';
+      seg.setAttribute('aria-label', 'اختيار الإصدار');
+      ['lite', 'studio'].forEach(function (key) {
+        var v = VERSIONS[key];
+        var el = document.createElement(key === current ? 'span' : 'a');
+        el.className = 'ver-seg__item' + (key === current ? ' is-active' : '');
+        el.title = v.title + (key === current ? '' : ' (Alt+' + kbd + ')');
+        if (key === current) el.setAttribute('aria-current', 'page');
+        else { el.href = v.href; el.addEventListener('click', function (e) { go(e, v.href); }); }
+        el.innerHTML = v.icon + '<span>' + v.label + '</span>';
+        seg.appendChild(el);
+      });
+      var k = document.createElement('span');
+      k.className = 'ver-seg__kbd'; k.textContent = 'Alt+' + kbd; k.title = 'التبديل بين الإصدارين';
+      seg.appendChild(k);
+      host.replaceWith(seg);
+    });
 
     // أي رابط يحمل data-ver-link ينتقل بنفس الحركة
     Array.prototype.forEach.call(document.querySelectorAll('[data-ver-link]'), function (el) {
       el.addEventListener('click', function (e) { go(e, el.getAttribute('href')); });
     });
 
-    // إظهار الزر بعد لحظة بحركة ارتدادية
-    requestAnimationFrame(function () { requestAnimationFrame(function () { a.classList.add('is-in'); }); });
-
     document.addEventListener('keydown', function (e) {
-      if (e.altKey && !e.ctrlKey && !e.metaKey && e.key.toUpperCase() === kbd) { e.preventDefault(); go(e); }
+      if (e.altKey && !e.ctrlKey && !e.metaKey && e.key.toUpperCase() === kbd) { e.preventDefault(); go(e, VERSIONS[other].href); }
     });
   }
 
   function go(e, href) {
     if (e) e.preventDefault();
-    var dest = href || to;
+    var dest = href || VERSIONS[other].href;
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     try { sessionStorage.setItem('qr-ver-switch', '1'); } catch (_) {}
     if (reduce) { location.href = dest; return; }
