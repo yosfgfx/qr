@@ -8,6 +8,8 @@
  *   4. وإلا نرفعه عبر Storage REST API بمفتاح publishable العام.
  *   5. سياسات RLS تسمح بالإدراج فقط (لا تعديل ولا حذف) فالرابط لا يتغير أبدًا.
  *
+ *   6. بعد النجاح يُسجَّل حدث الرفع (الاسم الأصلي والجهاز والمتصفح) في جدول qr_uploads.
+ *
  * لا يعتمد على أي مكتبة خارجية (fetch + WebCrypto فقط).
  */
 (function (global) {
@@ -100,6 +102,87 @@
     });
   }
 
+  /* ---------- سجل الرفع (للوحة الإدارة) ----------
+   * بعد كل رفع ناجح (أو إعادة استخدام ملف موجود) نسجّل صفًا في جدول qr_uploads:
+   * الاسم الأصلي ومعلومات الجهاز والمتصفح كما يراها المتصفح. الخادم يضيف بنفسه
+   * IP والدولة وUser-Agent من ترويسات الطلب. الجدول للإدراج فقط (لا قراءة بالمفتاح العام).
+   * أي فشل هنا يُتجاهل بصمت ولا يؤثر على الرفع.
+   */
+  function parseUA(ua) {
+    var r = { browser: '', browserVersion: '', os: '', osVersion: '' }, m;
+    if ((m = /Edg(?:A|iOS)?\/([\d.]+)/.exec(ua))) { r.browser = 'Edge'; r.browserVersion = m[1]; }
+    else if ((m = /OPR\/([\d.]+)/.exec(ua))) { r.browser = 'Opera'; r.browserVersion = m[1]; }
+    else if ((m = /SamsungBrowser\/([\d.]+)/.exec(ua))) { r.browser = 'Samsung Internet'; r.browserVersion = m[1]; }
+    else if ((m = /(?:Firefox|FxiOS)\/([\d.]+)/.exec(ua))) { r.browser = 'Firefox'; r.browserVersion = m[1]; }
+    else if ((m = /(?:Chrome|CriOS)\/([\d.]+)/.exec(ua))) { r.browser = 'Chrome'; r.browserVersion = m[1]; }
+    else if ((m = /Version\/([\d.]+).*Safari/.exec(ua))) { r.browser = 'Safari'; r.browserVersion = m[1]; }
+    if ((m = /Windows NT ([\d.]+)/.exec(ua))) { r.os = 'Windows'; r.osVersion = m[1]; }
+    else if ((m = /(?:iPhone|CPU) OS ([\d_]+)/.exec(ua))) { r.os = /iPad/.test(ua) ? 'iPadOS' : 'iOS'; r.osVersion = m[1].replace(/_/g, '.'); }
+    else if ((m = /Mac OS X ([\d_.]+)/.exec(ua))) { r.os = 'macOS'; r.osVersion = m[1].replace(/_/g, '.'); }
+    else if ((m = /Android ([\d.]+)/.exec(ua))) { r.os = 'Android'; r.osVersion = m[1]; }
+    else if (/CrOS/.test(ua)) r.os = 'ChromeOS';
+    else if (/Linux/.test(ua)) r.os = 'Linux';
+    return r;
+  }
+
+  async function collectClient() {
+    var n = global.navigator || {}, ua = n.userAgent || '', s = global.screen || {};
+    var c = parseUA(ua);
+    var touch = (n.maxTouchPoints || 0) > 0;
+    c.deviceType = /iPad|Tablet/i.test(ua) || (touch && /Macintosh/.test(ua)) ? 'tablet'
+      : /Mobi|iPhone|Android/i.test(ua) ? 'mobile' : 'desktop';
+    var am = /Android [\d.]+; (?:[a-z]{2}[-_][a-z]{2}; )?([^;)]+?)(?: Build|\))/i.exec(ua);
+    c.model = /iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) || (touch && /Macintosh/.test(ua)) ? 'iPad'
+      : am && am[1] !== 'K' ? am[1].trim() : /Macintosh/.test(ua) ? 'Mac' : '';
+    try {
+      if (n.userAgentData) {
+        c.mobile = n.userAgentData.mobile;
+        var h = await n.userAgentData.getHighEntropyValues(['model', 'platform', 'platformVersion', 'fullVersionList', 'architecture', 'bitness']);
+        if (h.model) c.model = h.model;
+        if (h.platform) c.os = h.platform === 'macOS' ? 'macOS' : h.platform;
+        if (h.platformVersion) c.osVersion = h.platformVersion;
+        if (h.architecture) c.arch = h.architecture + (h.bitness ? '-' + h.bitness : '');
+        var brand = (h.fullVersionList || []).filter(function (b) { return !/Not.?A.?Brand|Chromium/i.test(b.brand); })[0];
+        if (brand) { c.browser = brand.brand.replace(/^Google /, ''); c.browserVersion = brand.version; }
+      }
+    } catch (_) {}
+    c.platform = n.platform || '';
+    c.vendor = n.vendor || '';
+    c.screen = (s.width || 0) + 'x' + (s.height || 0);
+    c.dpr = global.devicePixelRatio || 1;
+    c.viewport = (global.innerWidth || 0) + 'x' + (global.innerHeight || 0);
+    c.colorDepth = s.colorDepth;
+    c.lang = n.language || '';
+    c.langs = (n.languages || []).slice(0, 5).join(',');
+    try { c.tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (_) {}
+    c.tzOffset = -new Date().getTimezoneOffset();
+    c.cores = n.hardwareConcurrency || null;
+    c.memoryGB = n.deviceMemory || null;
+    c.touchPoints = n.maxTouchPoints || 0;
+    var con = n.connection || {};
+    if (con.effectiveType) c.network = con.effectiveType + (con.downlink ? ' ~' + con.downlink + 'Mbps' : '');
+    try { c.darkMode = global.matchMedia('(prefers-color-scheme: dark)').matches; } catch (_) {}
+    try { c.standalone = global.matchMedia('(display-mode: standalone)').matches || !!n.standalone; } catch (_) {}
+    c.ua = ua.slice(0, 400);
+    return c;
+  }
+
+  function logUpload(r) {
+    var c = cfg();
+    if (!isConfigured() || !r || !r.path) return;
+    collectClient().then(function (client) {
+      return fetch(c.url.replace(/\/$/, '') + '/rest/v1/qr_uploads', {
+        method: 'POST',
+        keepalive: true,
+        headers: { apikey: c.key, Authorization: 'Bearer ' + c.key, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          object_path: r.path, original_name: (r.name || '').slice(0, 255), size: r.size, mime: r.contentType,
+          sha256: r.hash, reused: !!r.reused, page: (location.pathname + location.search).slice(0, 300), client: client
+        })
+      });
+    }).catch(function () {});
+  }
+
   /**
    * يرفع الملف (أو يعيد استخدامه إن كان موجودًا) ويعيد:
    * { url, path, hash, size, name, contentType, reused }
@@ -130,13 +213,15 @@
     }
 
     onStage('done');
-    return {
+    const result = {
       url: publicUrl(path),
       downloadUrl: publicUrl(path, file.name),
       path, hash, reused, contentType,
       size: file.size,
       name: file.name
     };
+    logUpload(result);
+    return result;
   }
 
   /* ---------- الرابط المختصر (معادلة ثابتة، بلا قاعدة بيانات) ----------
